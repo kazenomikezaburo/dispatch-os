@@ -1,0 +1,21 @@
+reset role; set role anon;
+select test_rls.set_actor('anon', null);
+select test_rls.assert_count('RLS-ANON-001', 'Anonymous Access', $$select * from public.branches$$, 0, 'branches');
+select test_rls.assert_count('RLS-ANON-002', 'Anonymous Access', $$select * from public.profiles$$, 0, 'profiles');
+select test_rls.assert_count('RLS-ANON-003', 'Anonymous Access', $$select * from public.manager_branch_access$$, 0, 'manager_branch_access');
+select test_rls.assert_count('RLS-ANON-004', 'Anonymous Access', $$select * from public.workers$$, 0, 'workers');
+select test_rls.assert_count('RLS-ANON-005', 'Anonymous Access', $$select * from public.clients$$, 0, 'clients');
+select test_rls.assert_count('RLS-ANON-006', 'Anonymous Access', $$select * from public.projects$$, 0, 'projects');
+select test_rls.assert_count('RLS-ANON-007', 'Anonymous Access', $$select * from public.workplaces$$, 0, 'workplaces');
+select test_rls.assert_count('RLS-ANON-008', 'Anonymous Access', $$select * from public.jobs$$, 0, 'jobs');
+select test_rls.assert_count('RLS-ANON-009', 'Anonymous Access', $$select * from public.shift_slots$$, 0, 'shift_slots');
+select test_rls.assert_count('RLS-ANON-010', 'Anonymous Access', $$select * from public.shift_applications$$, 0, 'shift_applications');
+select test_rls.assert_count('RLS-ANON-011', 'Anonymous Access', $$select * from public.assignments$$, 0, 'assignments');
+select test_rls.assert_count('RLS-ANON-012', 'Anonymous Access', $$select * from public.pre_shift_confirmations$$, 0, 'pre_shift_confirmations');
+select test_rls.assert_count('RLS-ANON-013', 'Anonymous Access', $$select * from public.attendance_events$$, 0, 'attendance_events');
+select test_rls.assert_count('RLS-ANON-014', 'Anonymous Access', $$select * from public.attendance_records$$, 0, 'attendance_records');
+select test_rls.assert_denied('RLS-ANON-015', 'Anonymous Access', $$insert into public.shift_applications (id, shift_slot_id, worker_id) values ('30000000-0000-0000-0000-000000000099','20000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-000000000001')$$, 'INSERT', 'shift_applications');
+select test_rls.assert_denied('RLS-ANON-016', 'Anonymous Access', $$update public.projects set name = 'TEST anon' where id = 'e0000000-0000-0000-0000-000000000001'$$, 'UPDATE', 'projects');
+select test_rls.assert_denied('RLS-ANON-017', 'Anonymous Access', $$delete from public.attendance_events where id = '60000000-0000-0000-0000-000000000001'$$, 'DELETE', 'attendance_events');
+select test_rls.assert_denied('RLS-ANON-018', 'Anonymous Access', $$select private.is_system_admin()$$, 'EXECUTE', 'private.is_system_admin');
+
