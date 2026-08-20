@@ -1,0 +1,7 @@
+import type { ProjectDetail } from "@/lib/admin/projects/project-detail-types";
+
+export function ProjectDetailSummary({ project }: { project: ProjectDetail }) {
+  const s = project.summary; const width = Math.min(Math.max(s.progress, 0), 100);
+  const items = [["業務・勤務先", `${s.jobCount}件`], ["シフト", `${s.shiftCount}件`], ["必要人数", `${s.requiredWorkers}名`], ["配置済み", `${s.assignedWorkers}名`], ["不足", `${s.shortage}名`]];
+  return <section aria-labelledby="summary-title" className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5"><h2 id="summary-title" className="text-lg font-semibold text-slate-950">配置サマリー</h2><dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">{items.map(([label, value]) => <div key={label}><dt className="text-sm text-slate-500">{label}</dt><dd className={`mt-1 text-xl font-semibold ${label === "不足" && s.shortage > 0 ? "text-red-700" : "text-slate-950"}`}>{value}</dd></div>)}</dl><div className="mt-5"><div className="flex justify-between gap-3 text-sm"><span className="font-medium text-slate-800">配置率</span><span className="font-semibold text-slate-950">{s.assignedWorkers} / {s.requiredWorkers}名（{s.progress}%）</span></div><div role="progressbar" aria-label={`${project.name}の配置率`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={width} className="mt-2 h-2.5 overflow-hidden rounded-full bg-slate-200"><div className={`h-full rounded-full ${s.shortage > 0 ? "bg-amber-500" : "bg-blue-700"}`} style={{ width: `${width}%` }} /></div></div></section>;
+}

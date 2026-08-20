@@ -1,0 +1,35 @@
+"use client";
+
+import Link from "next/link";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { createJob } from "@/app/actions/jobs";
+import { JOB_STATUS_LABELS } from "@/lib/admin/projects/project-detail-rules";
+import { JOB_STATUSES, jobFormSchema, type JobFormInput, type JobFormValues } from "@/lib/admin/projects/job-form-schema";
+import type { JobFormOptions } from "@/lib/admin/projects/job-form-types";
+import { JobFormError } from "./job-form-error";
+
+const controlClass = "mt-1.5 min-h-11 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100";
+export function JobCreateForm({ options }: { options: JobFormOptions }) {
+  const defaultStatus = options.project.status === "draft" ? "draft" : "recruiting";
+  const { register, handleSubmit, setError, formState: { errors, isSubmitting } } = useForm<JobFormValues, unknown, JobFormInput>({ resolver: zodResolver(jobFormSchema), defaultValues: { name: "", workplace_id: options.workplaces[0]?.id ?? "", status: defaultStatus, description: "", hourly_wage: "", transportation_fee_cap: "", dress_code: "", requirements: "", meal_notes: "", recruitment_notes: "", manual_url: "" } });
+  const submit = handleSubmit(async (values) => { const result = await createJob(options.project.id, values); if (result.fieldErrors) for (const [field, message] of Object.entries(result.fieldErrors)) if (message) setError(field as keyof JobFormValues, { message }); if (result.message) setError("root", { message: result.message }); });
+  const message = (field: keyof JobFormValues) => errors[field]?.message as string | undefined;
+  const disabled = options.workplaces.length === 0;
+  return <form onSubmit={submit} noValidate className="space-y-5 rounded-lg border border-slate-200 bg-white p-4 sm:p-6">
+    <JobFormError message={errors.root?.message} />
+    <Field name="name" label="業務名" required error={message("name")}><input {...register("name")} maxLength={100} aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? "name-error" : undefined} className={controlClass} /></Field>
+    <div className="grid gap-5 sm:grid-cols-2"><Field name="workplace_id" label="勤務先" required error={message("workplace_id")}><select {...register("workplace_id")} aria-invalid={Boolean(errors.workplace_id)} aria-describedby={errors.workplace_id ? "workplace_id-error" : undefined} className={controlClass}><option value="">選択してください</option>{options.workplaces.map((workplace) => <option key={workplace.id} value={workplace.id}>{workplace.name}</option>)}</select></Field><Field name="status" label="状態" required error={message("status")}><select {...register("status")} aria-invalid={Boolean(errors.status)} aria-describedby={errors.status ? "status-error" : undefined} className={controlClass}>{JOB_STATUSES.map((status) => <option key={status} value={status}>{JOB_STATUS_LABELS[status]}</option>)}</select></Field></div>
+    <Field name="description" label="仕事内容" error={message("description")}><textarea {...register("description")} rows={5} maxLength={2000} className={controlClass} /></Field>
+    <div className="grid gap-5 sm:grid-cols-2"><Field name="hourly_wage" label="時給" error={message("hourly_wage")}><div className="flex items-center gap-2"><input type="number" min="0" step="1" inputMode="numeric" {...register("hourly_wage")} aria-invalid={Boolean(errors.hourly_wage)} className={controlClass} /><span className="mt-1.5 text-sm text-slate-600">円</span></div></Field><Field name="transportation_fee_cap" label="交通費上限" error={message("transportation_fee_cap")}><div className="flex items-center gap-2"><input type="number" min="0" step="1" inputMode="numeric" {...register("transportation_fee_cap")} aria-invalid={Boolean(errors.transportation_fee_cap)} className={controlClass} /><span className="mt-1.5 text-sm text-slate-600">円</span></div></Field></div>
+    <Field name="dress_code" label="服装" error={message("dress_code")}><textarea {...register("dress_code")} rows={4} maxLength={2000} className={controlClass} /></Field>
+    <Field name="requirements" label="応募条件" error={message("requirements")}><textarea {...register("requirements")} rows={4} maxLength={2000} className={controlClass} /></Field>
+    <Field name="meal_notes" label="食事案内" error={message("meal_notes")}><textarea {...register("meal_notes")} rows={3} maxLength={2000} className={controlClass} /></Field>
+    <Field name="recruitment_notes" label="募集補足" error={message("recruitment_notes")}><textarea {...register("recruitment_notes")} rows={3} maxLength={2000} className={controlClass} /></Field>
+    <Field name="manual_url" label="業務資料URL" error={message("manual_url")}><input type="url" placeholder="https://..." {...register("manual_url")} aria-invalid={Boolean(errors.manual_url)} aria-describedby={errors.manual_url ? "manual_url-error" : undefined} className={controlClass} /></Field>
+    {disabled && <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><p>この支店には利用可能な勤務先がありません。先に「取引先・勤務先」から勤務先を登録してください。</p><Link href="/admin/clients" className="mt-2 inline-flex min-h-10 items-center font-semibold text-blue-700 hover:underline">勤務先を管理する</Link></div>}
+    <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end"><Link href={`/admin/projects/${options.project.id}`} className="inline-flex min-h-11 items-center justify-center rounded-md border border-slate-300 px-5 text-sm font-semibold text-slate-700 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">キャンセル</Link><button type="submit" disabled={disabled || isSubmitting} className="min-h-11 rounded-md bg-blue-700 px-5 text-sm font-semibold text-white hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:bg-slate-400">{isSubmitting ? "業務を追加中..." : "業務を追加"}</button></div>
+  </form>;
+}
+
+function Field({ name, label, required, error, children }: { name: string; label: string; required?: boolean; error?: string; children: React.ReactNode }) { return <label className="block text-sm font-medium text-slate-800">{label}{required && <span className="ml-1 text-red-700">*</span>}{children}{error && <span id={`${name}-error`} className="mt-1.5 block text-sm text-red-700">{error}</span>}</label>; }
