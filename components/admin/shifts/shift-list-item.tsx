@@ -1,4 +1,5 @@
 import type { ShiftListItem as ShiftItem } from "@/lib/admin/shifts/shift-list-types";
+import Link from "next/link";
 import { ShiftStatusBadge } from "./shift-status-badge";
 import { StaffingStatusBadge } from "./staffing-status-badge";
 
@@ -12,7 +13,7 @@ export function ShiftListItem({ shift }: { shift: ShiftItem }) {
     <div><p className="font-semibold text-slate-950">{shift.projectName}</p><p className="mt-1 text-sm text-slate-600">{shift.jobName}</p></div>
     <div><span className="text-xs text-slate-500 md:hidden">勤務先</span><p className="text-sm text-slate-700">{shift.workplaceName}</p></div>
     <dl className="grid grid-cols-4 gap-3 md:contents"><Metric label="必要" value={shift.requiredWorkers} /><Metric label="応募" value={shift.applicationCount} /><Metric label="配置" value={shift.assignedWorkers} /><Metric label="不足" value={shift.shortage} attention={shift.shortage > 0} /></dl>
-    <div className="flex flex-wrap gap-2 md:justify-end"><ShiftStatusBadge status={shift.status} /><StaffingStatusBadge shift={shift} /></div>
+    <div className="flex flex-wrap items-center gap-2 md:justify-end"><ShiftStatusBadge status={shift.status} /><StaffingStatusBadge staffingState={shift.staffingState} shortage={shift.shortage} /><Link href={`/admin/shifts/${shift.id}`} className="inline-flex min-h-10 items-center rounded-md border border-slate-300 px-3 text-xs font-semibold text-blue-700 hover:bg-blue-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">詳細を見る</Link></div>
   </li>;
 }
 

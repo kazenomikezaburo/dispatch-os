@@ -1,17 +1,15 @@
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
-import { z } from "zod";
 import { AdminBreadcrumb } from "@/components/admin/admin-breadcrumb";
 import { BulkShiftCreateForm } from "@/components/admin/projects/shifts/form/bulk-shift-create-form";
 import { getShiftFormOptions } from "@/lib/admin/projects/get-shift-form-options";
-
-const idSchema = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+import { uuidSchema } from "@/lib/utils/uuid-schema";
 
 export default async function BulkNewShiftPage({ params }: PageProps<"/admin/projects/[projectId]/jobs/[jobId]/shifts/bulk-new">) {
   await connection();
   const values = await params;
-  const projectId = idSchema.safeParse(values.projectId);
-  const jobId = idSchema.safeParse(values.jobId);
+  const projectId = uuidSchema.safeParse(values.projectId);
+  const jobId = uuidSchema.safeParse(values.jobId);
   if (!projectId.success || !jobId.success) notFound();
 
   const result = await getShiftFormOptions(projectId.data, jobId.data);

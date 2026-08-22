@@ -1,14 +1,13 @@
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
-import { z } from "zod";
 import { AdminBreadcrumb } from "@/components/admin/admin-breadcrumb";
 import { JobCreateForm } from "@/components/admin/projects/jobs/form/job-create-form";
 import { getJobFormOptions } from "@/lib/admin/projects/get-job-form-options";
+import { uuidSchema } from "@/lib/utils/uuid-schema";
 
-const projectIdSchema = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
 export default async function NewJobPage({ params }: PageProps<"/admin/projects/[projectId]/jobs/new">) {
   await connection();
-  const id = projectIdSchema.safeParse((await params).projectId);
+  const id = uuidSchema.safeParse((await params).projectId);
   if (!id.success) notFound();
   const result = await getJobFormOptions(id.data);
   if (!result.ok && result.reason === "not_found") notFound();

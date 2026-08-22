@@ -12,11 +12,11 @@ import {
   type BulkShiftFormValues,
 } from "@/lib/admin/projects/bulk-shift-form-schema";
 import type { BulkShiftCreateResult } from "@/lib/admin/projects/bulk-shift-form-types";
+import { uuidSchema } from "@/lib/utils/uuid-schema";
 
-const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const failure = (): ShiftCreateResult => ({ ok: false, message: "シフトを追加できませんでした。入力内容を確認して再度お試しください。" });
 export async function createShift(projectId: string, jobId: string, input: unknown): Promise<ShiftCreateResult> {
-  if (!uuid.test(projectId) || !uuid.test(jobId)) return failure();
+  if (!uuidSchema.safeParse(projectId).success || !uuidSchema.safeParse(jobId).success) return failure();
   const parsed = shiftFormSchema.safeParse(input);
   if (!parsed.success) { const fieldErrors: ShiftCreateResult["fieldErrors"] = {}; for (const issue of parsed.error.issues) { const field = issue.path[0]; if (typeof field === "string" && !(field in fieldErrors)) fieldErrors[field as keyof ShiftFormValues] = issue.message; } return { ok: false, fieldErrors }; }
   const auth = await getCurrentProfile();
@@ -54,7 +54,7 @@ export async function createBulkShifts(
   jobId: string,
   input: unknown,
 ): Promise<BulkShiftCreateResult> {
-  if (!uuid.test(projectId) || !uuid.test(jobId)) return bulkFailure();
+  if (!uuidSchema.safeParse(projectId).success || !uuidSchema.safeParse(jobId).success) return bulkFailure();
 
   const parsed = bulkShiftFormSchema.safeParse(input);
   if (!parsed.success) {

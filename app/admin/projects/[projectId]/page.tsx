@@ -1,17 +1,15 @@
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
-import { z } from "zod";
 import { ProjectDetailHeader } from "@/components/admin/projects/detail/project-detail-header";
 import { ProjectDetailSummary } from "@/components/admin/projects/detail/project-detail-summary";
 import { ProjectJobList } from "@/components/admin/projects/detail/project-job-list";
 import { ProjectOverview } from "@/components/admin/projects/detail/project-overview";
 import { getProjectDetail } from "@/lib/admin/projects/get-project-detail";
-
-const projectIdSchema = z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+import { uuidSchema } from "@/lib/utils/uuid-schema";
 
 export default async function ProjectDetailPage({ params }: PageProps<"/admin/projects/[projectId]">) {
   await connection();
-  const parsed = projectIdSchema.safeParse((await params).projectId);
+  const parsed = uuidSchema.safeParse((await params).projectId);
   if (!parsed.success) notFound();
   const result = await getProjectDetail(parsed.data);
   if (!result.ok && result.reason === "not_found") notFound();

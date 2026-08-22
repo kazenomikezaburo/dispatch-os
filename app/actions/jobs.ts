@@ -6,12 +6,12 @@ import { getCurrentProfile } from "@/lib/auth/get-current-profile";
 import { createClient } from "@/lib/supabase/server";
 import { jobFormSchema, type JobFormValues } from "@/lib/admin/projects/job-form-schema";
 import type { JobCreateResult } from "@/lib/admin/projects/job-form-types";
+import { uuidSchema } from "@/lib/utils/uuid-schema";
 
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const failure = (): JobCreateResult => ({ ok: false, message: "業務・勤務先を追加できませんでした。入力内容を確認して再度お試しください。" });
 
 export async function createJob(projectId: string, input: unknown): Promise<JobCreateResult> {
-  if (!uuidPattern.test(projectId)) return failure();
+  if (!uuidSchema.safeParse(projectId).success) return failure();
   const parsed = jobFormSchema.safeParse(input);
   if (!parsed.success) {
     const fieldErrors: JobCreateResult["fieldErrors"] = {};

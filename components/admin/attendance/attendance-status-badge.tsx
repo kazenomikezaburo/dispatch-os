@@ -1,0 +1,3 @@
+import type { AdminAttendanceState } from "@/lib/admin/attendance/attendance-types";
+const values = { scheduled: ["勤務前", "bg-slate-100 text-slate-700"], start_missing: ["開始未報告", "bg-red-50 text-red-800"], working: ["勤務中", "bg-blue-50 text-blue-800"], finished: ["勤務終了", "bg-emerald-50 text-emerald-800"], absent: ["欠勤", "bg-amber-50 text-amber-900"], no_show: ["無断欠勤", "bg-red-100 text-red-900"] } as const;
+export function AttendanceStatusBadge({ state }: { state: AdminAttendanceState }) { const [label, style] = values[state]; return <span className={`inline-flex rounded px-2.5 py-1 text-sm font-semibold ${style}`}>{label}</span>; }

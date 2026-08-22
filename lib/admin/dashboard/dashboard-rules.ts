@@ -5,6 +5,8 @@ import type {
   DashboardRuleInput,
   DashboardWorkplace,
 } from "./dashboard-types";
+// @ts-expect-error Node's native TypeScript loader requires the explicit suffix.
+import { getPreShiftConfirmationState } from "../../domain/pre-shift-confirmation.ts";
 
 export const ACTIVE_ASSIGNMENT_STATUSES = [
   "assigned",
@@ -42,6 +44,11 @@ export function buildDashboardData(input: DashboardRuleInput): DashboardData {
 
     const shiftStarted = input.now.getTime() > new Date(shift.startsAt).getTime();
     const startWorkMissing = !input.startWorkAssignmentIds.has(assignment.id);
+    const preShiftConfirmationState = getPreShiftConfirmationState({
+      startsAt: shift.startsAt,
+      hasConfirmation: input.confirmedAssignmentIds.has(assignment.id),
+      now: input.now,
+    });
 
     if (shiftStarted && startWorkMissing) {
       alerts.push({
@@ -59,7 +66,10 @@ export function buildDashboardData(input: DashboardRuleInput): DashboardData {
         projectName: shift.projectName,
         workplaceName: shift.workplaceName,
       });
-    } else if (!input.confirmedAssignmentIds.has(assignment.id)) {
+    } else if (
+      preShiftConfirmationState === "pending"
+      && input.now.getTime() < new Date(shift.startsAt).getTime()
+    ) {
       alerts.push({
         id: `pre-shift-missing:${assignment.id}`,
         type: "pre_shift_missing",

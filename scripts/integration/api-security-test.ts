@@ -1,9 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-// @ts-ignore Node's native TypeScript loader requires the explicit .ts suffix.
+// @ts-expect-error Node's native TypeScript loader requires the explicit .ts suffix.
 import { createActorClients, prepareAuthFixtures, readLocalConfig } from "./auth-fixtures.ts";
-// @ts-ignore Node's native TypeScript loader requires the explicit .ts suffix.
+// @ts-expect-error Node's native TypeScript loader requires the explicit .ts suffix.
 import { ACTORS, IDS, TABLES, testUuid } from "./test-data.ts";
-// @ts-ignore Node's native TypeScript loader requires the explicit .ts suffix.
+// @ts-expect-error Node's native TypeScript loader requires the explicit .ts suffix.
 import { outcome, TestRunner, type Outcome } from "./test-runner.ts";
 
 async function selectId(client: SupabaseClient, table: string, id: string): Promise<Outcome> {
@@ -89,18 +89,18 @@ runner.expectDenied("API-IDOR-PSC-002", "IDOR", "Worker A", "INSERT", "Worker B 
   await insert(clients.workerA, "pre_shift_confirmations", { id: testUuid(3), assignment_id: IDS.assignments.workerBN1, can_work: true, health_status: "good" }), "RLS");
 runner.expectDenied("API-RLS-PSC-003", "RLS", "Worker A", "INSERT", "past assignment",
   await insert(clients.workerA, "pre_shift_confirmations", { id: testUuid(3), assignment_id: IDS.assignments.workerAPast, can_work: true, health_status: "good" }), "RLS");
-runner.expectAllowed("API-RLS-PSC-004", "RLS", "Worker A", "UPDATE", "future confirmation",
-  await update(clients.workerA, "pre_shift_confirmations", confirmationId, { comment: "TEST updated" }));
+runner.expectDenied("API-RLS-PSC-004", "RLS", "Worker A", "UPDATE", "immutable future confirmation",
+  await update(clients.workerA, "pre_shift_confirmations", confirmationId, { comment: "TEST denied" }), "RLS");
 runner.expectDenied("API-RLS-PSC-005", "RLS", "Worker A", "UPDATE", "past confirmation",
   await update(clients.workerA, "pre_shift_confirmations", IDS.confirmations.workerAPast, { comment: "TEST denied" }), "RLS");
 runner.expectRows("API-RLS-PSC-006", "RLS", "Manager A", "Nagoya confirmation", await selectId(clients.managerA, "pre_shift_confirmations", IDS.confirmations.workerB), 1);
-runner.expectAllowed("API-RLS-PSC-007", "RLS", "Manager A", "UPDATE", "Nagoya confirmation",
-  await update(clients.managerA, "pre_shift_confirmations", IDS.confirmations.workerB, { comment: "TEST manager" }));
+runner.expectDenied("API-RLS-PSC-007", "RLS", "Manager A", "UPDATE", "immutable Nagoya confirmation",
+  await update(clients.managerA, "pre_shift_confirmations", IDS.confirmations.workerB, { comment: "TEST denied" }), "RLS");
 runner.expectDenied("API-IDOR-PSC-008", "IDOR", "Manager A", "UPDATE", "Tokyo confirmation",
   await update(clients.managerA, "pre_shift_confirmations", IDS.confirmations.workerC, { comment: "TEST denied" }), "RLS");
 
-runner.expectAllowed("API-AI-AE-001", "Attendance Integrity", "Worker A", "INSERT", "own worker event",
-  await insert(clients.workerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerAN2, event_type: "depart", source: "worker", idempotency_key: testUuid(5) }));
+runner.expectDenied("API-AI-AE-001", "Attendance Integrity", "Worker A", "INSERT", "direct worker event; RPC required",
+  await insert(clients.workerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerAN2, event_type: "depart", source: "worker", idempotency_key: testUuid(5) }), "RLS");
 runner.expectDenied("API-IDOR-AE-002", "IDOR", "Worker A", "INSERT", "Worker B assignment event",
   await insert(clients.workerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerBN1, event_type: "depart", source: "worker", idempotency_key: testUuid(5) }), "RLS");
 runner.expectDenied("API-SEC-AE-003", "Privilege Escalation", "Worker A", "INSERT", "manager source spoof",
