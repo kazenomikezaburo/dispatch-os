@@ -18,9 +18,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         {params.error === "invalid_credentials" && <p className="mt-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">メールアドレスまたはパスワードが正しくありません。</p>}
         {params.reason === "session_expired" && <p className="mt-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">セッションの有効期限が切れました。もう一度ログインしてください。</p>}
         <form action={login} className="mt-6 space-y-5">
-          <div><label htmlFor="email" className="text-sm font-medium text-slate-700">メールアドレス</label><input id="email" name="email" type="email" autoComplete="email" required className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-slate-500" /></div>
-          <div><label htmlFor="password" className="text-sm font-medium text-slate-700">パスワード</label><input id="password" name="password" type="password" autoComplete="current-password" required className="mt-2 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-slate-500" /></div>
-          <button type="submit" className="w-full rounded-lg bg-slate-900 px-4 py-2.5 font-medium text-white hover:bg-slate-700">ログイン</button>
+          <div><label htmlFor="email" className="text-sm font-medium text-slate-700">メールアドレス</label><input id="email" name="email" type="email" autoComplete="email" required className="mt-2 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" /></div>
+          <div><label htmlFor="password" className="text-sm font-medium text-slate-700">パスワード</label><input id="password" name="password" type="password" autoComplete="current-password" required className="mt-2 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" /></div>
+          <button type="submit" className="min-h-11 w-full rounded-lg bg-slate-900 px-4 py-2.5 font-medium text-white hover:bg-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">ログイン</button>
         </form>
       </section>
     </main>
