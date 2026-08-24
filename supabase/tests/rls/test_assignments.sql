@@ -7,7 +7,6 @@ select test_rls.assert_denied('RLS-AS-004', 'Critical', $$update public.assignme
 
 reset role; set role authenticated;
 select test_rls.set_actor('Manager A', 'a0000000-0000-0000-0000-000000000004');
-select test_rls.assert_allowed('RLS-AS-005', 'Critical', $$insert into public.assignments (id, shift_slot_id, worker_id, assigned_by) values ('40000000-0000-0000-0000-000000000092','20000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-000000000001','a0000000-0000-0000-0000-000000000004')$$, 'INSERT', 'Nagoya assignment');
+select test_rls.assert_denied('RLS-AS-005', 'Critical', $$insert into public.assignments (id, shift_slot_id, worker_id, assigned_by) values ('40000000-0000-0000-0000-000000000092','20000000-0000-0000-0000-000000000001','c0000000-0000-0000-0000-000000000001','a0000000-0000-0000-0000-000000000004')$$, 'INSERT', 'Nagoya assignment; RPC required');
 select test_rls.assert_denied('RLS-AS-006', 'IDOR', $$insert into public.assignments (id, shift_slot_id, worker_id, assigned_by) values ('40000000-0000-0000-0000-000000000093','20000000-0000-0000-0000-000000000003','c0000000-0000-0000-0000-000000000001','a0000000-0000-0000-0000-000000000004')$$, 'INSERT', 'Tokyo assignment');
 select test_rls.assert_denied('RLS-AS-007', 'IDOR', $$update public.assignments set shift_slot_id = '20000000-0000-0000-0000-000000000003' where id = '40000000-0000-0000-0000-000000000002'$$, 'UPDATE', 'Nagoya assignment to Tokyo');
-

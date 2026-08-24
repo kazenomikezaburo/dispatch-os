@@ -73,14 +73,18 @@ runner.expectDenied("API-RLS-APP-006", "RLS", "Worker A", "UPDATE", "own applica
 
 runner.expectRows("API-RLS-AS-001", "RLS", "Worker A", "own assignment", await selectId(clients.workerA, "assignments", IDS.assignments.workerAN2), 1);
 runner.expectRows("API-IDOR-AS-002", "IDOR", "Worker A", "Worker B assignment", await selectId(clients.workerA, "assignments", IDS.assignments.workerBN1), 0);
-runner.expectDenied("API-RLS-AS-003", "RLS", "Worker A", "INSERT", "assignment",
-  await insert(clients.workerA, "assignments", { id: testUuid(2), shift_slot_id: IDS.shifts.n1, worker_id: IDS.workers.workerA }), "RLS");
-runner.expectDenied("API-RLS-AS-004", "RLS", "Worker A", "UPDATE", "own assignment",
-  await update(clients.workerA, "assignments", IDS.assignments.workerAN2, { status: "completed" }), "RLS");
-runner.expectAllowed("API-RLS-AS-005", "RLS", "Manager A", "INSERT", "Nagoya assignment",
-  await insert(clients.managerA, "assignments", { id: testUuid(2), shift_slot_id: IDS.shifts.n1, worker_id: IDS.workers.workerA, assigned_by: IDS.users.managerA }));
-runner.expectDenied("API-IDOR-AS-006", "IDOR", "Manager A", "INSERT", "Tokyo assignment",
-  await insert(clients.managerA, "assignments", { id: testUuid(2), shift_slot_id: IDS.shifts.t1, worker_id: IDS.workers.workerA, assigned_by: IDS.users.managerA }), "RLS");
+runner.expectDenied("API-GRANT-AS-003", "Data API Grants", "Worker A", "INSERT", "assignment; RPC required",
+  await insert(clients.workerA, "assignments", { id: testUuid(2), shift_slot_id: IDS.shifts.n1, worker_id: IDS.workers.workerA }), "GRANT");
+runner.expectDenied("API-GRANT-AS-004", "Data API Grants", "Worker A", "UPDATE", "own assignment; RPC required",
+  await update(clients.workerA, "assignments", IDS.assignments.workerAN2, { status: "completed" }), "GRANT");
+runner.expectDenied("API-GRANT-AS-005", "Data API Grants", "Manager A", "INSERT", "Nagoya assignment; RPC required",
+  await insert(clients.managerA, "assignments", { id: testUuid(2), shift_slot_id: IDS.shifts.n1, worker_id: IDS.workers.workerA, assigned_by: IDS.users.managerA }), "GRANT");
+runner.expectDenied("API-GRANT-AS-006", "Data API Grants", "Manager A", "UPDATE", "Nagoya assignment; RPC required",
+  await update(clients.managerA, "assignments", IDS.assignments.workerBN1, { status: "completed" }), "GRANT");
+runner.expectDenied("API-GRANT-AS-007", "Data API Grants", "System Admin", "INSERT", "assignment; RPC required",
+  await insert(clients.systemAdmin, "assignments", { id: testUuid(2), shift_slot_id: IDS.shifts.t1, worker_id: IDS.workers.workerC, assigned_by: IDS.users.systemAdmin }), "GRANT");
+runner.expectDenied("API-GRANT-AS-008", "Data API Grants", "System Admin", "UPDATE", "assignment; RPC required",
+  await update(clients.systemAdmin, "assignments", IDS.assignments.workerCT1, { status: "completed" }), "GRANT");
 
 const confirmationId = testUuid(3);
 runner.expectAllowed("API-RLS-PSC-001", "RLS", "Worker A", "INSERT", "own future confirmation",
@@ -100,25 +104,27 @@ runner.expectDenied("API-IDOR-PSC-008", "IDOR", "Manager A", "UPDATE", "Tokyo co
   await update(clients.managerA, "pre_shift_confirmations", IDS.confirmations.workerC, { comment: "TEST denied" }), "RLS");
 
 runner.expectDenied("API-AI-AE-001", "Attendance Integrity", "Worker A", "INSERT", "direct worker event; RPC required",
-  await insert(clients.workerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerAN2, event_type: "depart", source: "worker", idempotency_key: testUuid(5) }), "RLS");
+  await insert(clients.workerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerAN2, event_type: "depart", source: "worker", idempotency_key: testUuid(5) }), "GRANT");
 runner.expectDenied("API-IDOR-AE-002", "IDOR", "Worker A", "INSERT", "Worker B assignment event",
-  await insert(clients.workerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerBN1, event_type: "depart", source: "worker", idempotency_key: testUuid(5) }), "RLS");
+  await insert(clients.workerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerBN1, event_type: "depart", source: "worker", idempotency_key: testUuid(5) }), "GRANT");
 runner.expectDenied("API-SEC-AE-003", "Privilege Escalation", "Worker A", "INSERT", "manager source spoof",
-  await insert(clients.workerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerAN2, event_type: "depart", source: "manager", idempotency_key: testUuid(5) }), "RLS");
+  await insert(clients.workerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerAN2, event_type: "depart", source: "manager", idempotency_key: testUuid(5) }), "GRANT");
 runner.expectDenied("API-GRANT-AE-004", "Data API Grants", "Worker A", "UPDATE", "attendance event",
   await update(clients.workerA, "attendance_events", IDS.events.workerA, { event_type: "end_work" }), "GRANT");
 runner.expectDenied("API-GRANT-AE-005", "Data API Grants", "Worker A", "DELETE", "attendance event",
   await remove(clients.workerA, "attendance_events", IDS.events.workerA), "GRANT");
-runner.expectAllowed("API-AI-AE-006", "Attendance Integrity", "Manager A", "INSERT", "Nagoya manager event",
-  await insert(clients.managerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerBN1, event_type: "depart", source: "manager", idempotency_key: testUuid(5) }));
+runner.expectDenied("API-AI-AE-006", "Attendance Integrity", "Manager A", "INSERT", "manager event; RPC required",
+  await insert(clients.managerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerBN1, event_type: "depart", source: "manager", idempotency_key: testUuid(5) }), "GRANT");
 runner.expectDenied("API-AI-AE-007", "Attendance Integrity", "Manager A", "INSERT", "worker source spoof",
-  await insert(clients.managerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerBN1, event_type: "depart", source: "worker", idempotency_key: testUuid(5) }), "RLS");
+  await insert(clients.managerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerBN1, event_type: "depart", source: "worker", idempotency_key: testUuid(5) }), "GRANT");
 runner.expectDenied("API-IDOR-AE-008", "IDOR", "Manager A", "INSERT", "Tokyo event",
-  await insert(clients.managerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerCT1, event_type: "depart", source: "manager", idempotency_key: testUuid(5) }), "RLS");
-runner.expectAllowed("API-AI-AE-009", "Attendance Integrity", "System Admin", "INSERT", "manager source event",
-  await insert(clients.systemAdmin, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerCT1, event_type: "depart", source: "manager", idempotency_key: testUuid(5) }));
+  await insert(clients.managerA, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerCT1, event_type: "depart", source: "manager", idempotency_key: testUuid(5) }), "GRANT");
+runner.expectDenied("API-GRANT-AE-008B", "Data API Grants", "Manager A", "UPDATE", "attendance event",
+  await update(clients.managerA, "attendance_events", IDS.events.workerB, { event_type: "end_work" }), "GRANT");
+runner.expectDenied("API-AI-AE-009", "Attendance Integrity", "System Admin", "INSERT", "manager source event; RPC required",
+  await insert(clients.systemAdmin, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerCT1, event_type: "depart", source: "manager", idempotency_key: testUuid(5) }), "GRANT");
 runner.expectDenied("API-SEC-AE-010", "Privilege Escalation", "System Admin", "INSERT", "worker source spoof",
-  await insert(clients.systemAdmin, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerCT1, event_type: "depart", source: "worker", idempotency_key: testUuid(5) }), "RLS");
+  await insert(clients.systemAdmin, "attendance_events", { id: testUuid(4), assignment_id: IDS.assignments.workerCT1, event_type: "depart", source: "worker", idempotency_key: testUuid(5) }), "GRANT");
 runner.expectDenied("API-GRANT-AE-011", "Data API Grants", "System Admin", "UPDATE", "attendance event",
   await update(clients.systemAdmin, "attendance_events", IDS.events.workerC, { event_type: "end_work" }), "GRANT");
 runner.expectDenied("API-GRANT-AE-012", "Data API Grants", "System Admin", "DELETE", "attendance event",
@@ -126,24 +132,24 @@ runner.expectDenied("API-GRANT-AE-012", "Data API Grants", "System Admin", "DELE
 
 runner.expectRows("API-RLS-AR-001", "RLS", "Worker A", "own record", await selectId(clients.workerA, "attendance_records", IDS.records.workerA), 1);
 runner.expectRows("API-IDOR-AR-002", "IDOR", "Worker A", "Worker B record", await selectId(clients.workerA, "attendance_records", IDS.records.workerB), 0);
-runner.expectDenied("API-RLS-AR-003", "RLS", "Worker A", "INSERT", "attendance record",
-  await insert(clients.workerA, "attendance_records", { id: testUuid(6), assignment_id: IDS.assignments.workerAFuture, planned_start_at: "2099-01-16T00:00:00Z", planned_end_at: "2099-01-16T09:00:00Z" }), "RLS");
-runner.expectDenied("API-RLS-AR-004", "RLS", "Worker A", "UPDATE", "own record",
-  await update(clients.workerA, "attendance_records", IDS.records.workerA, { worker_note: "TEST" }), "RLS");
+runner.expectDenied("API-GRANT-AR-003", "Data API Grants", "Worker A", "INSERT", "attendance record; RPC required",
+  await insert(clients.workerA, "attendance_records", { id: testUuid(6), assignment_id: IDS.assignments.workerAFuture, planned_start_at: "2099-01-16T00:00:00Z", planned_end_at: "2099-01-16T09:00:00Z" }), "GRANT");
+runner.expectDenied("API-GRANT-AR-004", "Data API Grants", "Worker A", "UPDATE", "own record; RPC required",
+  await update(clients.workerA, "attendance_records", IDS.records.workerA, { worker_note: "TEST" }), "GRANT");
 runner.expectRows("API-RLS-AR-005", "RLS", "Manager A", "Nagoya record", await selectId(clients.managerA, "attendance_records", IDS.records.workerB), 1);
-runner.expectAllowed("API-RLS-AR-006", "RLS", "Manager A", "INSERT", "Nagoya record",
-  await insert(clients.managerA, "attendance_records", { id: testUuid(6), assignment_id: IDS.assignments.workerAFuture, planned_start_at: "2099-01-16T00:00:00Z", planned_end_at: "2099-01-16T09:00:00Z" }));
-runner.expectAllowed("API-RLS-AR-007", "RLS", "Manager A", "UPDATE", "Nagoya record",
-  await update(clients.managerA, "attendance_records", IDS.records.workerB, { status: "working" }));
+runner.expectDenied("API-GRANT-AR-006", "Data API Grants", "Manager A", "INSERT", "Nagoya record; RPC required",
+  await insert(clients.managerA, "attendance_records", { id: testUuid(6), assignment_id: IDS.assignments.workerAFuture, planned_start_at: "2099-01-16T00:00:00Z", planned_end_at: "2099-01-16T09:00:00Z" }), "GRANT");
+runner.expectDenied("API-GRANT-AR-007", "Data API Grants", "Manager A", "UPDATE", "Nagoya record; RPC required",
+  await update(clients.managerA, "attendance_records", IDS.records.workerB, { status: "working" }), "GRANT");
 runner.expectRows("API-IDOR-AR-008", "IDOR", "Manager A", "Tokyo record", await selectId(clients.managerA, "attendance_records", IDS.records.workerC), 0);
 runner.expectDenied("API-IDOR-AR-009", "IDOR", "Manager A", "UPDATE", "Tokyo record",
-  await update(clients.managerA, "attendance_records", IDS.records.workerC, { status: "working" }), "RLS");
+  await update(clients.managerA, "attendance_records", IDS.records.workerC, { status: "working" }), "GRANT");
 runner.expectRows("API-RLS-AR-010", "RLS", "System Admin", "all seeded records",
   await selectIds(clients.systemAdmin, "attendance_records", Object.values(IDS.records)), 3);
-runner.expectAllowed("API-RLS-AR-011", "RLS", "System Admin", "INSERT", "past record",
-  await insert(clients.systemAdmin, "attendance_records", { id: testUuid(6), assignment_id: IDS.assignments.workerAPast, planned_start_at: "2000-01-01T00:00:00Z", planned_end_at: "2000-01-01T09:00:00Z" }));
-runner.expectAllowed("API-RLS-AR-012", "RLS", "System Admin", "UPDATE", "Tokyo record",
-  await update(clients.systemAdmin, "attendance_records", IDS.records.workerC, { status: "working" }));
+runner.expectDenied("API-GRANT-AR-011", "Data API Grants", "System Admin", "INSERT", "past record; RPC required",
+  await insert(clients.systemAdmin, "attendance_records", { id: testUuid(6), assignment_id: IDS.assignments.workerAPast, planned_start_at: "2000-01-01T00:00:00Z", planned_end_at: "2000-01-01T09:00:00Z" }), "GRANT");
+runner.expectDenied("API-GRANT-AR-012", "Data API Grants", "System Admin", "UPDATE", "Tokyo record; RPC required",
+  await update(clients.systemAdmin, "attendance_records", IDS.records.workerC, { status: "working" }), "GRANT");
 runner.expectDenied("API-GRANT-AR-013", "Data API Grants", "System Admin", "DELETE", "attendance record",
   await remove(clients.systemAdmin, "attendance_records", IDS.records.workerC), "GRANT");
 

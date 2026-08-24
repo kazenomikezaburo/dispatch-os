@@ -181,6 +181,12 @@ $$;
 drop policy "Workers can create own attendance events"
 on public.attendance_events;
 
+drop policy "Managers can create branch attendance events"
+on public.attendance_events;
+
+drop policy "System admins can create attendance events"
+on public.attendance_events;
+
 revoke all on function public.record_worker_start_work(uuid) from public;
 revoke all on function public.record_worker_start_work(uuid) from anon;
 grant execute on function public.record_worker_start_work(uuid) to authenticated;

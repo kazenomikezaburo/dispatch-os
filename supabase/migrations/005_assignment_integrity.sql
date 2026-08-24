@@ -22,6 +22,13 @@ create unique index assignments_active_shift_worker_unique
   on public.assignments(shift_slot_id, worker_id)
   where status in ('assigned', 'confirmed', 'completed');
 
+-- Assignment creation is restricted to the validated RPC below.
+drop policy "Managers can create branch assignments"
+on public.assignments;
+
+drop policy "System admins can create assignments"
+on public.assignments;
+
 create function public.create_assignment_from_application(
   p_shift_id uuid,
   p_application_id uuid
