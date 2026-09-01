@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { AdminPage } from "@/components/admin/admin-page";
 import { ShiftApplicationList } from "@/components/admin/shifts/shift-application-list";
 import { ShiftAssignmentList } from "@/components/admin/shifts/shift-assignment-list";
 import { ShiftDetailHeader } from "@/components/admin/shifts/shift-detail-header";
@@ -14,7 +15,7 @@ export default async function ShiftDetailPage({ params }: PageProps<"/admin/shif
   if (!value.success) notFound();
   const result = await getShiftDetail(value.data);
   if (!result.ok && result.reason === "not_found") notFound();
-  if (!result.ok) return <section role="alert" className="rounded-lg border border-red-200 bg-white p-5"><h1 className="font-semibold text-slate-950">シフト詳細を取得できませんでした。</h1><p className="mt-1 text-sm text-slate-600">時間をおいて再度お試しください。</p></section>;
+  if (!result.ok) return <AdminPage><section role="alert" className="rounded-lg border border-red-200 bg-white p-5"><h1 className="font-semibold text-slate-950">シフト詳細を取得できませんでした。</h1><p className="mt-1 text-sm text-slate-600">時間をおいて再度お試しください。</p></section></AdminPage>;
   const detail = result.detail;
-  return <div className="space-y-6"><ShiftDetailHeader detail={detail} /><ShiftDetailSummary detail={detail} /><div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,.7fr)]"><div className="space-y-6"><ShiftInfoSection detail={detail} /><ShiftJobConditions detail={detail} /></div><div className="space-y-6"><ShiftApplicationList shiftId={detail.id} applications={detail.applications} assignedWorkers={detail.assignedWorkers} requiredWorkers={detail.requiredWorkers} /><ShiftAssignmentList shiftId={detail.id} startsAt={detail.startsAt} assignments={detail.assignments} /><PreShiftConfirmationSection summary={detail.preShiftConfirmations} /></div></div></div>;
+  return <AdminPage><ShiftDetailHeader detail={detail} /><ShiftDetailSummary detail={detail} /><div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(20rem,.7fr)]"><div className="space-y-6"><ShiftInfoSection detail={detail} /><ShiftJobConditions detail={detail} /></div><div className="space-y-6"><ShiftApplicationList shiftId={detail.id} applications={detail.applications} assignedWorkers={detail.assignedWorkers} requiredWorkers={detail.requiredWorkers} /><ShiftAssignmentList shiftId={detail.id} startsAt={detail.startsAt} assignments={detail.assignments} /><PreShiftConfirmationSection summary={detail.preShiftConfirmations} /></div></div></AdminPage>;
 }

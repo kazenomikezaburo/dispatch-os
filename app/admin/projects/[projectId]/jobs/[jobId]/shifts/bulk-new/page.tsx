@@ -1,6 +1,8 @@
 import { connection } from "next/server";
 import { notFound } from "next/navigation";
 import { AdminBreadcrumb } from "@/components/admin/admin-breadcrumb";
+import { AdminPage } from "@/components/admin/admin-page";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { BulkShiftCreateForm } from "@/components/admin/projects/shifts/form/bulk-shift-create-form";
 import { getShiftFormOptions } from "@/lib/admin/projects/get-shift-form-options";
 import { uuidSchema } from "@/lib/utils/uuid-schema";
@@ -15,14 +17,14 @@ export default async function BulkNewShiftPage({ params }: PageProps<"/admin/pro
   const result = await getShiftFormOptions(projectId.data, jobId.data);
   if (!result.ok && result.reason === "not_found") notFound();
   if (!result.ok) {
-    return <section><h1 className="text-2xl font-semibold text-slate-950">複数日のシフトを追加</h1><div role="alert" className="mt-6 rounded-lg border border-red-200 bg-white p-5"><p className="font-semibold text-slate-950">入力項目を取得できませんでした。</p><p className="mt-1 text-sm text-slate-600">時間をおいて再度お試しください。</p></div></section>;
+    return <AdminPage width="form-wide"><AdminPageHeader title="シフトを一括作成" /><div role="alert" className="rounded-lg border border-red-200 bg-white p-5"><p className="font-semibold text-slate-950">入力項目を取得できませんでした。</p><p className="mt-1 text-sm text-slate-600">時間をおいて再度お試しください。</p></div></AdminPage>;
   }
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <AdminBreadcrumb items={[{ label: "案件管理" }, { label: result.options.project.name }, { label: result.options.job.name }, { label: "複数日まとめて追加" }]} />
-      <header><h1 id="page-title" className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">複数日のシフトを追加</h1><p className="mt-2 text-sm text-slate-600 sm:text-base">勤務日を選び、全日共通の勤務条件を入力してください。</p></header>
+    <AdminPage width="form-wide">
+      <AdminBreadcrumb items={[{ label: "案件" }, { label: result.options.project.name }, { label: result.options.job.name }, { label: "シフト一括作成" }]} />
+      <AdminPageHeader title="シフトを一括作成" description="共通設定をもとに複数日のシフトを作成します。" />
       <BulkShiftCreateForm options={result.options} />
-    </div>
+    </AdminPage>
   );
 }

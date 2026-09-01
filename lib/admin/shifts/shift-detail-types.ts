@@ -24,6 +24,7 @@ export type ShiftDetailAssignment = {
 
 export type AdminShiftDetail = {
   id: string;
+  updatedAt: string;
   startsAt: string;
   endsAt: string;
   status: ShiftStatus;
@@ -51,6 +52,12 @@ export type AdminShiftDetail = {
   applications: ShiftDetailApplication[];
   assignments: ShiftDetailAssignment[];
   preShiftConfirmations: PreShiftConfirmationSummary;
+  editRestrictions: {
+    minimumRequiredWorkers: number;
+    lockBreak: boolean;
+    lockPlannedTime: boolean;
+    plannedTimeReason?: string;
+  };
 };
 
 export type ShiftDetailResult =

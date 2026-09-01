@@ -2,47 +2,168 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { X } from "lucide-react";
+import { useEffect, useRef, type RefObject } from "react";
+import { cn } from "@/lib/utils/cn";
 import { adminNavigation, isAdminNavItemActive } from "./admin-nav";
 
 type AdminMobileSidebarProps = {
   open: boolean;
   onClose: () => void;
+  triggerRef: RefObject<HTMLButtonElement | null>;
 };
 
-export function AdminMobileSidebar({ open, onClose }: AdminMobileSidebarProps) {
+export function AdminMobileSidebar({
+  open,
+  onClose,
+  triggerRef,
+}: AdminMobileSidebarProps) {
   const pathname = usePathname();
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const previousPathnameRef = useRef(pathname);
+  const scrollPositionRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
     if (!open) return;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+
+    const body = document.body;
+    const root = document.documentElement;
+    const scrollPosition = { x: window.scrollX, y: window.scrollY };
+    scrollPositionRef.current = scrollPosition;
+
+    const previousBodyPosition = body.style.position;
+    const previousBodyTop = body.style.top;
+    const previousBodyLeft = body.style.left;
+    const previousBodyWidth = body.style.width;
+    const previousBodyOverflow = body.style.overflow;
+    const previousRootOverflow = root.style.overflow;
+
+    body.style.position = "fixed";
+    body.style.top = `-${scrollPosition.y}px`;
+    body.style.left = `-${scrollPosition.x}px`;
+    body.style.width = "100%";
+    body.style.overflow = "hidden";
+    root.style.overflow = "hidden";
+
+    return () => {
+      body.style.position = previousBodyPosition;
+      body.style.top = previousBodyTop;
+      body.style.left = previousBodyLeft;
+      body.style.width = previousBodyWidth;
+      body.style.overflow = previousBodyOverflow;
+      root.style.overflow = previousRootOverflow;
+      window.scrollTo(scrollPosition.x, scrollPosition.y);
     };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    if (open && !dialog.open) {
+      dialog.showModal();
+      closeButtonRef.current?.focus({ preventScroll: true });
+      return;
+    }
+
+    if (!open && dialog.open) {
+      dialog.close();
+      triggerRef.current?.focus({ preventScroll: true });
+    }
+  }, [open, triggerRef]);
+
+  useEffect(() => {
+    if (previousPathnameRef.current === pathname) return;
+    previousPathnameRef.current = pathname;
+    if (open) onClose();
+  }, [open, onClose, pathname]);
+
+  useEffect(() => {
+    const desktopMedia = window.matchMedia("(min-width: 1024px)");
+    const handleDesktopChange = (event: MediaQueryListEvent) => {
+      if (event.matches && open) onClose();
+    };
+
+    desktopMedia.addEventListener("change", handleDesktopChange);
+    return () =>
+      desktopMedia.removeEventListener("change", handleDesktopChange);
   }, [open, onClose]);
 
-  if (!open) return null;
+  function handleDialogClose() {
+    if (open) onClose();
+  }
 
   return (
-    <div className="fixed inset-0 z-50 lg:hidden">
-      <button type="button" aria-label="メニューを閉じる" className="absolute inset-0 bg-slate-950/40" onClick={onClose} />
-      <aside role="dialog" aria-modal="true" aria-label="管理画面メニュー" className="relative flex h-full w-[min(20rem,85vw)] flex-col bg-white shadow-xl">
-        <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-5">
-          <div><p className="font-semibold text-slate-950">派遣業務OS</p><p className="text-xs text-slate-500">Dispatch Manager</p></div>
-          <button type="button" onClick={onClose} aria-label="メニューを閉じる" className="flex size-10 items-center justify-center rounded-md border border-slate-300 text-xl text-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">×</button>
+    <dialog
+      ref={dialogRef}
+      id="admin-mobile-navigation"
+      aria-labelledby="admin-mobile-navigation-title"
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.preventDefault();
+          onClose();
+        }
+      }}
+      onClose={handleDialogClose}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+      className="fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-[min(20rem,calc(100vw-3rem))] max-w-full overflow-hidden bg-white p-0 text-slate-950 shadow-2xl backdrop:bg-slate-950/45 open:flex open:flex-col lg:hidden motion-reduce:transition-none"
+    >
+      <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-4">
+        <div className="min-w-0">
+          <h2
+            id="admin-mobile-navigation-title"
+            className="truncate font-semibold text-slate-950"
+          >
+            派遣業務OS
+          </h2>
+          <p className="truncate text-xs text-slate-500">Dispatch Manager</p>
         </div>
-        <nav aria-label="モバイル管理画面ナビゲーション" className="flex-1 space-y-1 overflow-y-auto p-3">
+        <button
+          ref={closeButtonRef}
+          type="button"
+          onClick={onClose}
+          aria-label="管理画面メニューを閉じる"
+          className="flex size-11 shrink-0 items-center justify-center rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 active:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+        >
+          <X aria-hidden="true" className="size-5" />
+        </button>
+      </header>
+      <nav
+        aria-label="モバイル管理画面ナビゲーション"
+        className="flex-1 space-y-1 overflow-y-auto overscroll-contain p-3"
+      >
           {adminNavigation.map((item) => {
             const active = isAdminNavItemActive(pathname, item.href);
+            const Icon = item.icon;
             return (
-              <Link key={item.href} href={item.href} onClick={onClose} aria-current={active ? "page" : undefined} className={`flex min-h-12 items-center rounded-r-md border-l-2 px-4 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ${active ? "border-blue-700 bg-blue-50 text-blue-950" : "border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-950"}`}>
-                {item.label}
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onClose}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "flex min-h-12 items-center gap-3 rounded-r-md border-l-2 px-4 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600",
+                  active
+                    ? "border-blue-700 bg-blue-50 font-semibold text-blue-950"
+                    : "border-transparent font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-950 active:bg-slate-100",
+                )}
+              >
+                <Icon
+                  aria-hidden="true"
+                  className={cn("size-5 shrink-0", active && "text-blue-700")}
+                />
+                <span>{item.label}</span>
               </Link>
             );
           })}
-        </nav>
-      </aside>
-    </div>
+      </nav>
+    </dialog>
   );
 }

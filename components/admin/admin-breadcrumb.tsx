@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { adminNavigation, isAdminNavItemActive } from "./admin-nav";
 
 export type AdminBreadcrumbItem = {
   label: string;
+  href?: string;
 };
 
 export function AdminBreadcrumb({ items }: { items?: readonly AdminBreadcrumbItem[] }) {
@@ -20,9 +22,15 @@ export function AdminBreadcrumb({ items }: { items?: readonly AdminBreadcrumbIte
         {resolvedItems.map((item, index) => (
           <li key={`${item.label}-${index}`} className="flex items-center gap-2">
             {index > 0 && <span aria-hidden="true" className="text-slate-400">/</span>}
-            <span aria-current={index === resolvedItems.length - 1 ? "page" : undefined} className={index === resolvedItems.length - 1 ? "font-medium text-slate-900" : undefined}>
-              {item.label}
-            </span>
+            {item.href && index < resolvedItems.length - 1 ? (
+              <Link href={item.href} className="inline-flex min-h-10 items-center font-medium text-blue-700 underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                {item.label}
+              </Link>
+            ) : (
+              <span aria-current={index === resolvedItems.length - 1 ? "page" : undefined} className={index === resolvedItems.length - 1 ? "font-medium text-slate-900" : undefined}>
+                {item.label}
+              </span>
+            )}
           </li>
         ))}
       </ol>

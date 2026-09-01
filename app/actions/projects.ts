@@ -5,7 +5,11 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth/get-current-profile";
 import { createClient } from "@/lib/supabase/server";
 import { projectFormSchema, type ProjectFormInput } from "@/lib/admin/projects/project-form-schema";
-import type { ProjectCreateResult } from "@/lib/admin/projects/project-form-types";
+import type { ProjectCreateResult, ProjectUpdateResult } from "@/lib/admin/projects/project-form-types";
+import { projectUpdateSchema, type ProjectUpdateInput } from "@/lib/admin/projects/project-update-schema";
+import { updateProjectCore } from "@/lib/admin/projects/update-project-core";
+import { editForbiddenMessage } from "@/lib/admin/edit/edit-action-result";
+import { getEditActor } from "@/lib/admin/edit/get-edit-actor";
 
 const failure = (): ProjectCreateResult => ({ ok: false, message: "案件を作成できませんでした。入力内容を確認して再度お試しください。" });
 
@@ -49,4 +53,29 @@ export async function createProject(input: ProjectFormInput): Promise<ProjectCre
     console.error("Failed to create project", error);
     return failure();
   }
+}
+
+export async function updateProject(input: ProjectUpdateInput): Promise<ProjectUpdateResult> {
+  const parsed = projectUpdateSchema.safeParse(input);
+  if (!parsed.success) {
+    const fieldErrors: NonNullable<Extract<ProjectUpdateResult, { type: "validation" }>["fieldErrors"]> = {};
+    for (const issue of parsed.error.issues) {
+      const field = issue.path[0];
+      if (typeof field === "string" && field !== "id" && field !== "expectedUpdatedAt" && !(field in fieldErrors)) {
+        fieldErrors[field as keyof typeof fieldErrors] = issue.message;
+      }
+    }
+    return { ok: false, type: "validation", message: "入力内容を確認してください。", fieldErrors };
+  }
+
+  const actor = await getEditActor();
+  if (!actor.ok) return { ok: false, type: "forbidden", message: editForbiddenMessage };
+
+  const result = await updateProjectCore(parsed.data, actor.actor);
+  if (result.ok) {
+    revalidatePath("/admin");
+    revalidatePath("/admin/projects");
+    revalidatePath(`/admin/projects/${parsed.data.id}`);
+  }
+  return result;
 }

@@ -1,3 +1,6 @@
+import { AdminPage } from "@/components/admin/admin-page";
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+
 export default function ClientsPage() {
-  return <section><h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">取引先・勤務先</h1><p className="mt-2 text-sm text-slate-600 sm:text-base">取引先と勤務先を管理します。</p></section>;
+  return <AdminPage><AdminPageHeader title="取引先・勤務先" description="取引先と勤務先を管理します。" /></AdminPage>;
 }
