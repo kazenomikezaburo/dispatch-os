@@ -1,0 +1,16 @@
+import Link from "next/link";
+import type { ProjectDetailJob } from "@/lib/admin/projects/project-detail-types";
+import { SHIFT_STATUS_LABELS } from "@/lib/admin/projects/project-detail-rules";
+
+const day = new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", month: "numeric", day: "numeric", weekday: "short" });
+const time = new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit", hour12: false });
+
+export function ProjectShiftSection({ jobs }: { jobs: ProjectDetailJob[] }) {
+  const shifts = jobs.flatMap((job) => job.shifts.map((shift) => ({ ...shift, jobName: job.name, workplaceName: job.workplace.name }))).sort((a, b) => a.startsAt.localeCompare(b.startsAt) || a.id.localeCompare(b.id));
+
+  return <section aria-labelledby="shifts-title" className="border-t border-slate-200 pt-6">
+    <div className="flex flex-wrap items-baseline gap-2"><h2 id="shifts-title" className="text-lg font-semibold text-slate-950">シフト</h2><span className="text-sm font-semibold text-slate-500">{shifts.length}件</span></div>
+    <p className="mt-1 text-sm text-slate-600">案件内の勤務日と配置状況を時系列で確認できます。</p>
+    {shifts.length === 0 ? <div className="mt-5 rounded-lg border border-dashed border-slate-300 bg-slate-50 px-5 py-8 text-center"><p className="font-semibold text-slate-950">シフトがまだありません。</p><p className="mt-1 text-sm text-slate-600">業務・勤務先を追加した後、各業務の「シフトを追加」または一括作成を利用してください。</p></div> : <ul aria-label="案件内シフト一覧" className="mt-5 divide-y divide-slate-200 overflow-hidden rounded-lg border border-slate-200 bg-white">{shifts.map((shift) => <li key={shift.id} className="grid gap-4 px-4 py-4 sm:px-5 lg:grid-cols-[minmax(9rem,.8fr)_minmax(12rem,1.1fr)_minmax(14rem,1.2fr)_auto] lg:items-center"><div><Link href={`/admin/shifts/${shift.id}`} className="inline-flex min-h-10 items-center font-semibold text-blue-800 underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">{day.format(new Date(shift.startsAt))}</Link><p className="text-sm font-medium text-slate-700">{time.format(new Date(shift.startsAt))}〜{time.format(new Date(shift.endsAt))}</p></div><div><p className="font-semibold text-slate-950">{shift.jobName}</p><p className="mt-1 text-sm text-slate-600">{shift.workplaceName}{shift.label ? ` · ${shift.label}` : ""}</p></div><dl className="grid grid-cols-3 gap-3 text-sm"><div><dt className="text-xs text-slate-500">必要</dt><dd className="mt-1 font-semibold text-slate-950">{shift.requiredWorkers}名</dd></div><div><dt className="text-xs text-slate-500">配置</dt><dd className="mt-1 font-semibold text-slate-950">{shift.assignedWorkers}名</dd></div><div><dt className="text-xs text-slate-500">不足</dt><dd className={`mt-1 font-semibold ${shift.shortage > 0 ? "text-red-700" : "text-slate-950"}`}>{shift.shortage}名</dd></div></dl><div className="flex flex-wrap items-center gap-2 lg:justify-end"><span className="rounded bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">{SHIFT_STATUS_LABELS[shift.status]}</span><span className={`rounded px-2.5 py-1 text-xs font-semibold ${shift.shortage > 0 ? "bg-red-50 text-red-800" : "bg-emerald-50 text-emerald-800"}`}>{shift.shortage > 0 ? `${shift.shortage}名不足` : "配置完了"}</span></div></li>)}</ul>}
+  </section>;
+}

@@ -43,7 +43,7 @@ grant select, insert, update on table public.shift_applications to authenticated
 
 revoke all privileges on table public.assignments from anon;
 revoke all privileges on table public.assignments from authenticated;
-grant select, insert, update on table public.assignments to authenticated;
+grant select on table public.assignments to authenticated;
 
 revoke all privileges on table public.pre_shift_confirmations from anon;
 revoke all privileges on table public.pre_shift_confirmations from authenticated;
@@ -51,8 +51,8 @@ grant select, insert, update on table public.pre_shift_confirmations to authenti
 
 revoke all privileges on table public.attendance_events from anon;
 revoke all privileges on table public.attendance_events from authenticated;
-grant select, insert on table public.attendance_events to authenticated;
+grant select on table public.attendance_events to authenticated;
 
 revoke all privileges on table public.attendance_records from anon;
 revoke all privileges on table public.attendance_records from authenticated;
-grant select, insert, update on table public.attendance_records to authenticated;
+grant select on table public.attendance_records to authenticated;

@@ -121,6 +121,12 @@ begin
     raise exception using errcode = '22023', message = 'attendance_revision_invalid_state';
   end if;
 
+  if v_before_start is null
+    or v_before_end is null
+    or v_before_break is null then
+    raise exception using errcode = '23514', message = 'attendance_record_incomplete';
+  end if;
+
   if p_actual_start_at is null or p_actual_end_at is null or p_actual_end_at <= p_actual_start_at then
     raise exception using errcode = '23514', message = 'attendance_revision_times_invalid';
   end if;

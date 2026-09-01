@@ -22,13 +22,13 @@ export function AttendanceList({ items }: { items: AttendanceItem[] }) {
     <ul className="divide-y divide-slate-200">{items.map((item) => {
       const actions = getAssignmentAbsenceActions(item, now);
       return <li key={item.id} className="grid gap-3 p-4 lg:grid-cols-[minmax(8rem,1fr)_7rem_minmax(12rem,1.5fr)_7rem_7rem_minmax(8rem,1fr)_minmax(11rem,1fr)] lg:items-center lg:px-5">
-        <Link href={`/admin/shifts/${item.shiftId}`} className="font-semibold text-blue-800 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">{item.workerName}</Link>
-        <span className="text-sm text-slate-700">{time.format(new Date(item.startsAt))} → {time.format(new Date(item.endsAt))}</span>
+        <Link href={`/admin/attendance/${item.id}`} className="inline-flex min-h-11 items-center font-semibold text-blue-800 underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">{item.workerName}</Link>
+        <Link href={`/admin/shifts/${item.shiftId}`} aria-label={`${item.workerName}のシフト詳細（${time.format(new Date(item.startsAt))}から${time.format(new Date(item.endsAt))}）`} className="inline-flex min-h-11 items-center text-sm font-medium text-blue-800 underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">{time.format(new Date(item.startsAt))} → {time.format(new Date(item.endsAt))}</Link>
         <span><span className="block font-medium text-slate-900">{item.projectName}</span><span className="block text-sm text-slate-600">{item.jobName} / {item.workplaceName}</span></span>
         <AttendanceStatusBadge state={item.state} />
         <span className="text-sm text-slate-700">開始 {item.startWorkAt ? time.format(new Date(item.startWorkAt)) : "—"}<br />終了 {item.endWorkAt ? time.format(new Date(item.endWorkAt)) : "—"}</span>
         <Anomalies item={item} />
-        <div className="space-y-2"><Link href={`/admin/attendance/${item.id}`} className="inline-flex min-h-11 items-center rounded border border-blue-300 px-3 text-xs font-semibold text-blue-800 hover:bg-blue-50">勤怠詳細</Link><AssignmentAbsenceActions shiftId={item.shiftId} assignmentId={item.id} workerName={item.workerName} {...actions} /></div>
+        <div><AssignmentAbsenceActions shiftId={item.shiftId} assignmentId={item.id} workerName={item.workerName} {...actions} /></div>
       </li>;
     })}</ul>
   </section>;

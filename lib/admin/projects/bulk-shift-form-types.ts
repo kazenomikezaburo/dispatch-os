@@ -4,4 +4,5 @@ export type BulkShiftCreateResult = {
   ok: false;
   message?: string;
   fieldErrors?: Partial<Record<keyof BulkShiftFormValues, string>>;
+  dateErrors?: Record<string, string>;
 };

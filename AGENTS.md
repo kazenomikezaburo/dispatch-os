@@ -283,3 +283,51 @@ npm run dev
 - Securityへの影響
 - Migration変更有無
 - package追加有無
+
+## Dispatch OS UI/UX Guidelines
+
+UI/UXに関する実装・変更・新規画面追加を行う場合は、必ず以下を参照すること。
+
+- `docs/dispatch-os-ui-ux-v1.md`
+- UI ComponentやInteraction Patternを新規実装・変更する場合は、`docs/dispatch-os-ui-patterns-v1.md`
+
+UI実装では、個別画面だけを局所的に最適化せず、同ドキュメントで定義された以下の方針を優先する。
+
+- Information Architecture
+- Route / Page削減
+- Navigation
+- Admin / Workerの責務分離
+- Sidebar / Layout
+- Content Width
+- Spacing
+- Typography
+- Button Hierarchy
+- Status Badge
+- Card
+- Form
+- Filter
+- Empty State
+- Feedback
+- Breadcrumb
+- Date / Time Format
+- Responsive Design
+- Accessibility
+
+特に、新しい作成・編集Routeを追加する前に、既存Detail画面、Drawer、Dialog、Inline Editへ自然に統合できないか検討すること。
+
+一覧画面では原則として主対象名を詳細画面への主要Navigationとし、「詳細を見る」Buttonの乱立を避ける。
+
+UI/UX改善のみを目的とする作業では、既存のDomain Rule、Migration、RLS、GRANT、DB Function、RPC、Auth、集計Rule、状態遷移を変更しない。
+
+UI変更にDB・Security・Domain変更が必要だと判断した場合は、独断で変更せず、別Phaseとして提案・報告すること。
+
+UI/UX改修は原則として以下の順序で進める。
+
+1. IA / Route
+2. Layout / Shell
+3. Navigation
+4. Design Foundation
+5. Individual Screens
+6. Visual Polish
+
+後続Phaseで削除・統合予定の画面を先に大規模リデザインしないこと。

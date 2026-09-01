@@ -3,6 +3,19 @@
 alter table public.attendance_records
   add column adjustment_reason text;
 
+-- Attendance confirmation and later corrections are restricted to RPCs.
+drop policy "Managers can create branch attendance records"
+on public.attendance_records;
+
+drop policy "Managers can update branch attendance records"
+on public.attendance_records;
+
+drop policy "System admins can create attendance records"
+on public.attendance_records;
+
+drop policy "System admins can update attendance records"
+on public.attendance_records;
+
 create function public.confirm_attendance_record(
   p_assignment_id uuid,
   p_actual_start_at timestamptz,

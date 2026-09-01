@@ -19,14 +19,14 @@ const applicationRank: Record<ApplicationStatus, number> = {
 
 type DetailBase = Omit<
   AdminShiftDetail,
-  "applicationCount" | "assignedWorkers" | "shortage" | "staffingState" | "applications" | "assignments" | "preShiftConfirmations"
+  "applicationCount" | "assignedWorkers" | "shortage" | "staffingState" | "applications" | "assignments" | "preShiftConfirmations" | "editRestrictions"
 >;
 
 export function buildShiftDetail(
   base: DetailBase,
   applications: Omit<ShiftDetailApplication, "assigned">[],
   assignments: ShiftDetailAssignment[],
-): Omit<AdminShiftDetail, "preShiftConfirmations"> {
+): Omit<AdminShiftDetail, "preShiftConfirmations" | "editRestrictions"> {
   const activeAssignments = assignments.filter((item) =>
     item.status === "assigned" || item.status === "confirmed" || item.status === "completed");
   const assignedWorkerIds = new Set(activeAssignments.map((item) => item.workerId));

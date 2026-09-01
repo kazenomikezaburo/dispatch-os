@@ -12,6 +12,7 @@ import type {
 
 type ShiftRow = {
   id: string;
+  updated_at: string;
   starts_at: string;
   ends_at: string;
   required_workers: number;
@@ -65,7 +66,7 @@ export async function getShiftDetail(shiftId: string): Promise<ShiftDetailResult
     const shiftResult = await supabase
       .from("shift_slots")
       .select(`
-        id, starts_at, ends_at, required_workers, break_minutes,
+        id, updated_at, starts_at, ends_at, required_workers, break_minutes,
         application_deadline, status,
         jobs!inner (
           id, name, description, hourly_wage, transportation_fee_cap,
@@ -114,6 +115,7 @@ export async function getShiftDetail(shiftId: string): Promise<ShiftDetailResult
     const detail = buildShiftDetail(
       {
         id: row.id,
+        updatedAt: row.updated_at,
         startsAt: row.starts_at,
         endsAt: row.ends_at,
         status: row.status as ShiftStatus,
@@ -142,6 +144,12 @@ export async function getShiftDetail(shiftId: string): Promise<ShiftDetailResult
       ok: true,
       detail: {
         ...detail,
+        editRestrictions: {
+          minimumRequiredWorkers: detail.assignedWorkers,
+          lockBreak: detail.assignedWorkers > 0,
+          lockPlannedTime: detail.applicationCount > 0 || detail.assignedWorkers > 0 || assignmentItems.some((item) => Boolean(item.startWorkAt)) || Date.now() >= new Date(row.starts_at).getTime(),
+          plannedTimeReason: "応募・配置・勤怠がある、または勤務開始済みのため予定時間を変更できません。",
+        },
         preShiftConfirmations: buildPreShiftConfirmationSummary(
           row.starts_at,
           assignmentItems.filter((item) => item.status === "assigned" || item.status === "confirmed" || item.status === "completed"),

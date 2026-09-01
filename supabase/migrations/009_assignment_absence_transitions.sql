@@ -155,3 +155,10 @@ grant execute on function public.mark_assignment_absent(uuid, uuid) to authentic
 revoke all on function public.mark_assignment_no_show(uuid, uuid) from public;
 revoke all on function public.mark_assignment_no_show(uuid, uuid) from anon;
 grant execute on function public.mark_assignment_no_show(uuid, uuid) to authenticated;
+
+-- Assignment state changes are restricted to the dedicated transition RPCs.
+drop policy "Managers can update branch assignments"
+on public.assignments;
+
+drop policy "System admins can update assignments"
+on public.assignments;

@@ -97,7 +97,9 @@ values
   ('20000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000002', 'TEST Shift N2', '2099-02-15 09:00:00+09', '2099-02-15 18:00:00+09', 2, 'closed'),
   ('20000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000003', 'TEST Shift T1', '2099-03-15 09:00:00+09', '2099-03-15 18:00:00+09', 2, 'recruiting'),
   ('20000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000004', 'TEST Past Shift', '2000-01-01 09:00:00+09', '2000-01-01 18:00:00+09', 1, 'completed'),
-  ('20000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001', 'TEST Shift N1B', '2099-01-16 09:00:00+09', '2099-01-16 18:00:00+09', 1, 'recruiting')
+  ('20000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001', 'TEST Shift N1B', '2099-01-16 09:00:00+09', '2099-01-16 18:00:00+09', 1, 'recruiting'),
+  ('20000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000001', 'UI確認 未確定勤怠', '2026-08-22 09:00:00+09', '2026-08-22 18:00:00+09', 1, 'completed'),
+  ('20000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000004', 'UI確認 確定済み勤怠', '2000-01-02 09:00:00+09', '2000-01-02 18:00:00+09', 1, 'completed')
 on conflict (id) do update set job_id = excluded.job_id, label = excluded.label, starts_at = excluded.starts_at, ends_at = excluded.ends_at, required_workers = excluded.required_workers, status = excluded.status;
 
 insert into public.shift_applications (id, shift_slot_id, worker_id, status)
@@ -112,7 +114,9 @@ values
   ('40000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000002', 'manager', 'confirmed', 'a0000000-0000-0000-0000-000000000004'),
   ('40000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000003', 'manager', 'confirmed', 'a0000000-0000-0000-0000-000000000005'),
   ('40000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000004', 'c0000000-0000-0000-0000-000000000001', 'manager', 'completed', 'a0000000-0000-0000-0000-000000000004'),
-  ('40000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000001', 'manager', 'confirmed', 'a0000000-0000-0000-0000-000000000004')
+  ('40000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000001', 'manager', 'confirmed', 'a0000000-0000-0000-0000-000000000004'),
+  ('40000000-0000-0000-0000-000000000006', '20000000-0000-0000-0000-000000000006', 'c0000000-0000-0000-0000-000000000001', 'manager', 'confirmed', 'a0000000-0000-0000-0000-000000000004'),
+  ('40000000-0000-0000-0000-000000000007', '20000000-0000-0000-0000-000000000007', 'c0000000-0000-0000-0000-000000000001', 'manager', 'completed', 'a0000000-0000-0000-0000-000000000004')
 on conflict (id) do update set shift_slot_id = excluded.shift_slot_id, worker_id = excluded.worker_id, source = excluded.source, status = excluded.status, assigned_by = excluded.assigned_by;
 
 insert into public.pre_shift_confirmations (id, assignment_id, can_work, health_status, comment)
@@ -123,12 +127,18 @@ values
   ('50000000-0000-0000-0000-000000000004', '40000000-0000-0000-0000-000000000004', true, 'good', 'TEST Worker A past confirmation')
 on conflict (id) do update set assignment_id = excluded.assignment_id, can_work = excluded.can_work, health_status = excluded.health_status, comment = excluded.comment;
 
-insert into public.attendance_events (id, assignment_id, event_type, source, location_status, idempotency_key)
+insert into public.attendance_events (id, assignment_id, event_type, server_received_at, source, location_status, idempotency_key)
 values
-  ('60000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001', 'arrive', 'worker', 'not_requested', '61000000-0000-0000-0000-000000000001'),
-  ('60000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000002', 'arrive', 'worker', 'not_requested', '61000000-0000-0000-0000-000000000002'),
-  ('60000000-0000-0000-0000-000000000003', '40000000-0000-0000-0000-000000000003', 'arrive', 'worker', 'not_requested', '61000000-0000-0000-0000-000000000003')
-on conflict (id) do update set assignment_id = excluded.assignment_id, event_type = excluded.event_type, source = excluded.source, location_status = excluded.location_status;
+  ('60000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000001', 'arrive', '2099-02-15 08:45:00+09', 'worker', 'not_requested', '61000000-0000-0000-0000-000000000001'),
+  ('60000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000002', 'arrive', '2099-01-15 08:45:00+09', 'worker', 'not_requested', '61000000-0000-0000-0000-000000000002'),
+  ('60000000-0000-0000-0000-000000000003', '40000000-0000-0000-0000-000000000003', 'arrive', '2099-03-15 08:45:00+09', 'worker', 'not_requested', '61000000-0000-0000-0000-000000000003'),
+  ('60000000-0000-0000-0000-000000000004', '40000000-0000-0000-0000-000000000006', 'start_work', '2026-08-22 09:07:00+09', 'worker', 'not_requested', '61000000-0000-0000-0000-000000000004'),
+  ('60000000-0000-0000-0000-000000000005', '40000000-0000-0000-0000-000000000006', 'end_work', '2026-08-22 17:52:00+09', 'worker', 'not_requested', '61000000-0000-0000-0000-000000000005'),
+  ('60000000-0000-0000-0000-000000000006', '40000000-0000-0000-0000-000000000007', 'start_work', '2000-01-02 09:00:00+09', 'worker', 'not_requested', '61000000-0000-0000-0000-000000000006'),
+  ('60000000-0000-0000-0000-000000000007', '40000000-0000-0000-0000-000000000007', 'end_work', '2000-01-02 18:00:00+09', 'worker', 'not_requested', '61000000-0000-0000-0000-000000000007'),
+  ('60000000-0000-0000-0000-000000000008', '40000000-0000-0000-0000-000000000004', 'start_work', '2000-01-01 09:00:00+09', 'worker', 'not_requested', '61000000-0000-0000-0000-000000000008'),
+  ('60000000-0000-0000-0000-000000000009', '40000000-0000-0000-0000-000000000004', 'end_work', '2000-01-01 18:00:00+09', 'worker', 'not_requested', '61000000-0000-0000-0000-000000000009')
+on conflict (id) do update set assignment_id = excluded.assignment_id, event_type = excluded.event_type, server_received_at = excluded.server_received_at, source = excluded.source, location_status = excluded.location_status;
 
 insert into public.attendance_records (
   id, assignment_id, planned_start_at, planned_end_at, status
@@ -138,3 +148,52 @@ values
   ('70000000-0000-0000-0000-000000000002', '40000000-0000-0000-0000-000000000002', '2099-01-15 09:00:00+09', '2099-01-15 18:00:00+09', 'scheduled'),
   ('70000000-0000-0000-0000-000000000003', '40000000-0000-0000-0000-000000000003', '2099-03-15 09:00:00+09', '2099-03-15 18:00:00+09', 'scheduled')
 on conflict (id) do update set assignment_id = excluded.assignment_id, planned_start_at = excluded.planned_start_at, planned_end_at = excluded.planned_end_at, status = excluded.status;
+
+insert into public.attendance_records (
+  id, assignment_id, planned_start_at, planned_end_at,
+  actual_start_at, actual_end_at, total_break_minutes,
+  status, approved_at, approved_by, adjustment_reason
+)
+values
+  ('70000000-0000-0000-0000-000000000004', '40000000-0000-0000-0000-000000000007', '2000-01-02 09:00:00+09', '2000-01-02 18:00:00+09', '2000-01-02 09:00:00+09', '2000-01-02 18:00:00+09', 60, 'approved', '2000-01-02 18:10:00+09', 'a0000000-0000-0000-0000-000000000004', null),
+  ('70000000-0000-0000-0000-000000000005', '40000000-0000-0000-0000-000000000004', '2000-01-01 09:00:00+09', '2000-01-01 18:00:00+09', '2000-01-01 09:00:00+09', '2000-01-01 17:30:00+09', 45, 'approved', '2000-01-01 18:10:00+09', 'a0000000-0000-0000-0000-000000000004', null)
+on conflict (id) do update set
+  assignment_id = excluded.assignment_id,
+  planned_start_at = excluded.planned_start_at,
+  planned_end_at = excluded.planned_end_at,
+  actual_start_at = excluded.actual_start_at,
+  actual_end_at = excluded.actual_end_at,
+  total_break_minutes = excluded.total_break_minutes,
+  status = excluded.status,
+  approved_at = excluded.approved_at,
+  approved_by = excluded.approved_by,
+  adjustment_reason = excluded.adjustment_reason;
+
+insert into public.attendance_record_revisions (
+  id, attendance_record_id, assignment_id,
+  before_actual_start_at, before_actual_end_at, before_break_minutes,
+  after_actual_start_at, after_actual_end_at, after_break_minutes,
+  reason, changed_by, changed_at
+)
+values (
+  '80000000-0000-0000-0000-000000000001',
+  '70000000-0000-0000-0000-000000000005',
+  '40000000-0000-0000-0000-000000000004',
+  '2000-01-01 09:00:00+09', '2000-01-01 18:00:00+09', 60,
+  '2000-01-01 09:00:00+09', '2000-01-01 17:30:00+09', 45,
+  'UI確認用の勤怠訂正Fixture',
+  'a0000000-0000-0000-0000-000000000004',
+  '2000-01-01 18:20:00+09'
+)
+on conflict (id) do update set
+  attendance_record_id = excluded.attendance_record_id,
+  assignment_id = excluded.assignment_id,
+  before_actual_start_at = excluded.before_actual_start_at,
+  before_actual_end_at = excluded.before_actual_end_at,
+  before_break_minutes = excluded.before_break_minutes,
+  after_actual_start_at = excluded.after_actual_start_at,
+  after_actual_end_at = excluded.after_actual_end_at,
+  after_break_minutes = excluded.after_break_minutes,
+  reason = excluded.reason,
+  changed_by = excluded.changed_by,
+  changed_at = excluded.changed_at;

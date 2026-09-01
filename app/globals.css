@@ -1,26 +1,124 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Dispatch OS semantic tokens: the single canonical visual token source. */
+  --background: #f7f7f5;
+  --surface: #ffffff;
+  --surface-subtle: #fafafa;
+  --surface-muted: #f4f4f5;
+  --surface-hover: #f4f4f5;
+  --surface-selected: #eff6ff;
+  --surface-overlay: rgb(24 24 27 / 42%);
+
+  --foreground: #18181b;
+  --foreground-secondary: #3f3f46;
+  --foreground-muted: #71717a;
+  --foreground-disabled: #a1a1aa;
+  --foreground-inverse: #ffffff;
+
+  --border: #e4e4e7;
+  --border-strong: #d4d4d8;
+  --border-subtle: #eeeeef;
+
+  --primary: #18181b;
+  --primary-hover: #27272a;
+  --primary-active: #09090b;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f4f5;
+  --secondary-hover: #e4e4e7;
+  --secondary-foreground: #27272a;
+  --link: #1d4ed8;
+  --link-hover: #1e40af;
+  --focus-ring: #2563eb;
+
+  --success: #15803d;
+  --success-subtle: #f0fdf4;
+  --success-foreground: #166534;
+  --warning: #b45309;
+  --warning-subtle: #fffbeb;
+  --warning-foreground: #92400e;
+  --danger: #b91c1c;
+  --danger-subtle: #fef2f2;
+  --danger-foreground: #991b1b;
+  --info: #1d4ed8;
+  --info-subtle: #eff6ff;
+  --info-foreground: #1e40af;
+
+  --radius-control: 0.5rem;
+  --radius-card: 0.75rem;
+  --radius-panel: 0.75rem;
+  --radius-pill: 9999px;
+  --shadow-overlay: 0 20px 45px rgb(24 24 27 / 18%);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-selected: var(--surface-selected);
   --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-foreground-disabled: var(--foreground-disabled);
+  --color-foreground-inverse: var(--foreground-inverse);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-border-subtle: var(--border-subtle);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
+  --color-focus-ring: var(--focus-ring);
+  --color-success: var(--success);
+  --color-success-subtle: var(--success-subtle);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-subtle: var(--danger-subtle);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-info: var(--info);
+  --color-info-subtle: var(--info-subtle);
+  --color-info-foreground: var(--info-foreground);
+  --radius-ds-control: var(--radius-control);
+  --radius-ds-card: var(--radius-card);
+  --radius-ds-panel: var(--radius-panel);
+  --radius-ds-pill: var(--radius-pill);
+  --shadow-ds-overlay: var(--shadow-overlay);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@utility rounded-control {
+  border-radius: var(--radius-control);
+}
+
+@utility rounded-panel {
+  border-radius: var(--radius-panel);
+}
+
+@utility rounded-card {
+  border-radius: var(--radius-card);
+}
+
+@utility rounded-pill {
+  border-radius: var(--radius-pill);
+}
+
+@utility shadow-overlay {
+  box-shadow: var(--shadow-overlay);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), "Yu Gothic UI", "Hiragino Sans", Meiryo, system-ui, sans-serif;
 }

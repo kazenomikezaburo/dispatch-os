@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
-import { AdminHeader } from "./admin-header";
-import { AdminSidebar } from "./admin-sidebar";
+import { AdminShellFrame } from "./admin-shell-frame";
 import { AdminUserMenu } from "./admin-user-menu";
 
 export type AdminShellUser = {
@@ -9,14 +8,26 @@ export type AdminShellUser = {
   accountType: "manager" | "system_admin";
 };
 
-export function AdminShell({ children, user }: { children: ReactNode; user: AdminShellUser }) {
+export function AdminShell({
+  children,
+  initialCollapsed,
+  user,
+}: {
+  children: ReactNode;
+  initialCollapsed: boolean;
+  user: AdminShellUser;
+}) {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950">
-      <AdminSidebar />
-      <div className="min-w-0 lg:pl-60">
-        <AdminHeader userMenu={<AdminUserMenu displayName={user.displayName} accountType={user.accountType} />} />
-        <main className="w-full p-4 sm:p-6 lg:p-8">{children}</main>
-      </div>
-    </div>
+    <AdminShellFrame
+      initialCollapsed={initialCollapsed}
+      userMenu={
+        <AdminUserMenu
+          displayName={user.displayName}
+          accountType={user.accountType}
+        />
+      }
+    >
+      {children}
+    </AdminShellFrame>
   );
 }

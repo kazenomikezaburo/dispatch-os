@@ -10,11 +10,11 @@ export function ProjectFilters({ filters }: { filters: ProjectQuery }) {
   const hasFilters = Boolean(filters.q || filters.status !== "all" || filters.period !== "all");
 
   return (
-    <form method="GET" action="/admin/projects" className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
-      <div className="grid gap-4 md:grid-cols-[minmax(15rem,1fr)_12rem_12rem_auto] md:items-end">
-        <label className="block text-sm font-medium text-slate-800">
-          案件名・取引先
-          <span className="relative mt-1.5 block">
+    <form method="GET" action="/admin/projects" aria-label="案件の検索と絞り込み" className="rounded-ds-card border border-border bg-surface p-4">
+      <div className="grid gap-3 md:grid-cols-[minmax(15rem,1fr)_10rem_10rem_auto] md:items-center">
+        <label className="block">
+          <span className="sr-only">案件名・取引先</span>
+          <span className="relative block">
             <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <input
               type="search"
@@ -22,28 +22,28 @@ export function ProjectFilters({ filters }: { filters: ProjectQuery }) {
               defaultValue={filters.q}
               maxLength={100}
               placeholder="案件名・取引先を検索"
-              className="min-h-10 w-full rounded-md border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              className="min-h-11 w-full rounded-ds-control border border-border-strong bg-surface-subtle py-2 pl-9 pr-3 text-sm text-foreground outline-none placeholder:text-foreground-disabled focus:border-focus-ring focus:bg-surface focus:ring-2 focus:ring-info-subtle"
             />
           </span>
         </label>
-        <label className="block text-sm font-medium text-slate-800">
-          状態
-          <select name="status" defaultValue={filters.status} className="mt-1.5 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100">
+        <label className="block">
+          <span className="sr-only">状態</span>
+          <select aria-label="状態" name="status" defaultValue={filters.status} className="min-h-11 w-full rounded-ds-control border border-border-strong bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-focus-ring focus:ring-2 focus:ring-info-subtle">
             <option value="all">すべて</option>
             {PROJECT_STATUSES.map((status) => <option key={status} value={status}>{PROJECT_STATUS_LABELS[status]}</option>)}
           </select>
         </label>
-        <label className="block text-sm font-medium text-slate-800">
-          期間
-          <select name="period" defaultValue={filters.period} className="mt-1.5 min-h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-950 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100">
+        <label className="block">
+          <span className="sr-only">期間</span>
+          <select aria-label="期間" name="period" defaultValue={filters.period} className="min-h-11 w-full rounded-ds-control border border-border-strong bg-surface px-3 py-2 text-sm text-foreground outline-none focus:border-focus-ring focus:ring-2 focus:ring-info-subtle">
             {Object.entries(PROJECT_PERIOD_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select>
         </label>
-        <button type="submit" className="min-h-10 rounded-md bg-blue-700 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+        <button type="submit" className="min-h-11 rounded-ds-control bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary-hover active:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">
           検索
         </button>
       </div>
-      {hasFilters && <Link href="/admin/projects" className="mt-3 inline-flex min-h-10 items-center text-sm font-medium text-blue-700 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">条件をクリア</Link>}
+      {hasFilters && <div className="mt-2 flex justify-end"><Link href="/admin/projects" className="inline-flex min-h-11 items-center text-sm font-medium text-link underline-offset-4 hover:text-link-hover hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">フィルターをクリア</Link></div>}
     </form>
   );
 }
