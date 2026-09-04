@@ -1,6 +1,12 @@
+import Link from "next/link";
 import { AdminPage } from "@/components/admin/admin-page";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
-
-export default function WorkersPage() {
-  return <AdminPage><AdminPageHeader title="スタッフ管理" description="スタッフ情報を管理します。" /></AdminPage>;
-}
+import { AdminEmptyState,AdminErrorState,adminStateActionClass } from "@/components/admin/admin-state";
+import { WorkerEditor } from "@/components/admin/workers/worker-editor";
+import { WorkerFilters } from "@/components/admin/workers/worker-filters";
+import { WorkerList } from "@/components/admin/workers/worker-list";
+import { getWorkers } from "@/lib/admin/workers/get-workers";
+import { WORKER_PAGE_SIZE,parseWorkerListQuery,workerListHref } from "@/lib/admin/workers/worker-rules";
+export default async function WorkersPage({searchParams}:PageProps<"/admin/workers">){const query=parseWorkerListQuery(await searchParams);const result=await getWorkers(query);const filtered=Boolean(query.q||query.status!=="all");return <AdminPage><AdminPageHeader title="スタッフ" description="登録スタッフの基本情報と勤務状況を確認します。" actions={result.ok&&result.canEdit&&result.branches.length?<WorkerEditor branches={result.branches}/>:undefined}/>{result.ok&&<section aria-label="スタッフ集計" className="grid gap-3 sm:grid-cols-3"><Metric label="登録スタッフ" value={result.summary.total}/><Metric label="稼働可" value={result.summary.active}/><Metric label="休止・停止" value={result.summary.unavailable}/></section>}<WorkerFilters query={query}/>{!result.ok?<AdminErrorState title="スタッフを取得できませんでした。"/>:result.items.length===0?<AdminEmptyState title={filtered?"条件に一致するスタッフはいません":"スタッフが登録されていません"} description={filtered?"検索条件を変更してください。":"System Adminがスタッフを登録できます。"}/>:<><WorkerList items={result.items}/><Pager query={query} total={result.total}/></>}</AdminPage>}
+function Metric({label,value}:{label:string;value:number}){return <div className="rounded-panel border border-border bg-surface p-4"><p className="text-sm text-foreground-muted">{label}</p><p className="mt-1 text-2xl font-semibold">{value}名</p></div>}
+function Pager({query,total}:{query:ReturnType<typeof parseWorkerListQuery>;total:number}){const pages=Math.max(1,Math.ceil(total/WORKER_PAGE_SIZE));if(pages<=1)return null;return <nav aria-label="スタッフページ" className="flex items-center justify-between">{query.page<=1?<span aria-disabled className={`${adminStateActionClass} opacity-50`}>前へ</span>:<Link className={adminStateActionClass} href={workerListHref(query,{page:query.page-1})}>前へ</Link>}<span className="text-sm">{query.page} / {pages}</span>{query.page>=pages?<span aria-disabled className={`${adminStateActionClass} opacity-50`}>次へ</span>:<Link className={adminStateActionClass} href={workerListHref(query,{page:query.page+1})}>次へ</Link>}</nav>}

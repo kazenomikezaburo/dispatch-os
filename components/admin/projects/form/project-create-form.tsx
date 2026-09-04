@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { unstable_rethrow } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { AdminFeedback, AdminForbiddenState, adminStateActionClass } from "@/components/admin/admin-state";
 import { useForm, useWatch } from "react-hook-form";
 import { createProject, updateProject } from "@/app/actions/projects";
 import { PROJECT_STATUS_LABELS } from "@/lib/admin/projects/project-rules";
@@ -30,8 +32,9 @@ type ProjectFormProps = {
 };
 
 export function ProjectForm({ options, mode = "create", initialValues, projectId, expectedUpdatedAt, cancelHref, onCancel, onPendingChange, onSuccess, onReloadLatest, submitLabel = mode === "edit" ? "変更を保存" : "案件を作成", pendingLabel = mode === "edit" ? "保存中..." : "案件を作成中..." }: ProjectFormProps) {
+  const [failureKind, setFailureKind] = useState<string>();
   const defaultBranch = initialValues?.branch_id ?? options.branches[0]?.id ?? "";
-  const { register, handleSubmit, control, setError, setValue, formState: { errors, isSubmitting } } = useForm<ProjectFormInput>({
+  const { register, handleSubmit, control, setError, setValue, formState: { errors, isSubmitting, isDirty } } = useForm<ProjectFormInput>({
     resolver: zodResolver(projectFormSchema),
     defaultValues: { name: "", branch_id: defaultBranch, client_id: options.clients.find((client) => client.branchId === defaultBranch)?.id ?? "", start_date: "", end_date: "", status: "draft", description: "", ...initialValues },
   });
@@ -45,6 +48,7 @@ export function ProjectForm({ options, mode = "create", initialValues, projectId
 
   const submit = handleSubmit(async (values) => {
     onPendingChange?.(true);
+    setFailureKind(undefined);
     try {
       if (mode === "create") {
         const result = await createProject(values);
@@ -63,8 +67,13 @@ export function ProjectForm({ options, mode = "create", initialValues, projectId
         onSuccess?.();
         return;
       }
+      setFailureKind(result.type);
       if (result.type === "validation" && result.fieldErrors) for (const [field, message] of Object.entries(result.fieldErrors)) if (message) setError(field as keyof ProjectFormInput, { message });
       setError("root", { message: result.message });
+    } catch (cause) {
+      unstable_rethrow(cause);
+      setFailureKind("error");
+      setError("root", { message: "通信を確認してください。保存結果を確認してから再度お試しください。" });
     } finally {
       onPendingChange?.(false);
     }
@@ -72,7 +81,10 @@ export function ProjectForm({ options, mode = "create", initialValues, projectId
   const error = (name: keyof ProjectFormInput) => errors[name]?.message;
 
   return <form onSubmit={submit} noValidate className="space-y-5 rounded-panel border border-border bg-surface p-4 sm:p-6">
-    {errors.root?.message && mode === "edit" && errors.root.message.includes("更新されています") ? <div role="alert" className="rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"><p className="font-semibold">他の管理者によって案件が更新されています。最新の内容を読み込んでください。</p>{onReloadLatest && <button type="button" onClick={onReloadLatest} className="mt-3 inline-flex min-h-11 items-center font-semibold text-blue-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">最新の内容を読み込む</button>}</div> : <ProjectFormError message={errors.root?.message} />}
+    <fieldset disabled={isSubmitting} className="min-w-0 space-y-5">
+    {errors.root?.message && failureKind === "conflict" ? <AdminFeedback kind="conflict" message={errors.root.message}>{onReloadLatest && <button type="button" onClick={onReloadLatest} className={adminStateActionClass}>最新の内容を読み込む</button>}</AdminFeedback> : failureKind === "forbidden" ? <AdminForbiddenState message={errors.root?.message} /> : <ProjectFormError message={errors.root?.message} />}
+    {isSubmitting ? <AdminFeedback kind="pending" message="保存しています。この画面を閉じないでください。" /> : isDirty && <AdminFeedback kind="unsaved" message="未保存の変更があります。" />}
+    <p className="text-sm text-foreground-secondary">案件の基本情報・取引先・期間を管理します。勤務先・時給・服装は業務側で設定します。作成後の支店は変更できません。</p>
     <Field label="案件名" required error={error("name")}><input {...register("name")} maxLength={100} aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? "案件名-error" : undefined} className={fieldClass} /></Field>
     <div className="grid gap-5 sm:grid-cols-2">
       <Field label="支店" required error={error("branch_id")}>{mode === "edit" ? <select value={defaultBranch} disabled aria-label="支店（変更不可）" className={fieldClass}>{options.branches.filter((branch) => branch.id === defaultBranch).map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}</select> : <select {...register("branch_id")} aria-invalid={Boolean(errors.branch_id)} aria-describedby={errors.branch_id ? "支店-error" : undefined} className={fieldClass}>{options.branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}</select>}</Field>
@@ -83,6 +95,7 @@ export function ProjectForm({ options, mode = "create", initialValues, projectId
     <Field label="状態" required error={error("status")}><select {...register("status")} aria-invalid={Boolean(errors.status)} aria-describedby={errors.status ? "状態-error" : undefined} className={fieldClass}>{PROJECT_STATUSES.map((status) => <option key={status} value={status}>{PROJECT_STATUS_LABELS[status]}</option>)}</select></Field>
     <Field label="説明" error={error("description")}><textarea {...register("description")} maxLength={2000} rows={5} aria-invalid={Boolean(errors.description)} aria-describedby={errors.description ? "説明-error" : undefined} className={fieldClass} /></Field>
     <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end"><CancelAction cancelHref={cancelHref} onCancel={onCancel} /><button type="submit" disabled={disabled || isSubmitting} className="min-h-11 rounded-control bg-primary px-5 text-sm font-medium text-primary-foreground hover:bg-primary-hover active:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-foreground-disabled">{isSubmitting ? pendingLabel : submitLabel}</button></div>
+    </fieldset>
   </form>;
 }
 

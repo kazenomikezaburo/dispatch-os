@@ -1,0 +1,12 @@
+import assert from "node:assert/strict";
+const rules=await import("../../lib/admin/pre-shift/pre-shift-rules.ts");
+const now=new Date("2026-09-04T03:00:00Z");
+assert.equal(rules.parsePreShiftQuery({},now).date,"2026-09-05");
+assert.equal(rules.parsePreShiftQuery({date:"bad"},now).date,"2026-09-05");
+assert.deepEqual(rules.preShiftRange("2026-09-05"),{start:"2026-09-04T15:00:00.000Z",end:"2026-09-05T15:00:00.000Z"});
+const base={assignmentStatus:"assigned",workerId:"w",shiftId:"s",endsAt:"2026-09-05T03:00:00Z",projectId:"p",projectName:"案件",jobId:"j",jobName:"業務",workplaceId:"x",workplaceName:"会場",confirmation:null};
+const items=[{...base,assignmentId:"2",workerName:"井上",startsAt:"2026-09-05T02:00:00Z",confirmation:{canWork:true,healthStatus:"good",plannedWakeAt:null,plannedDepartureAt:null,comment:null,submittedAt:"x",updatedAt:"x"}},{...base,assignmentId:"1",workerName:"青木",startsAt:"2026-09-05T01:00:00Z"}];
+assert.deepEqual(rules.filterPreShiftItems(items,rules.parsePreShiftQuery({date:"2026-09-05"},now)).map(x=>x.assignmentId),["1","2"]);
+assert.equal(rules.filterPreShiftItems(items,rules.parsePreShiftQuery({date:"2026-09-05",status:"confirmed"},now)).length,1);
+assert.match(rules.preShiftHref({...rules.parsePreShiftQuery({date:"2026-09-05",q:"青木"},now),assignment:"1"}),/q=%E9%9D%92%E6%9C%A8.*assignment=1/);
+console.log("pre-shift monitor rules: PASS");

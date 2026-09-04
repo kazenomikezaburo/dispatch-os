@@ -1,1 +1,5 @@
-export function ShiftFormError({ message }: { message?: string }) { return message ? <div role="alert" className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{message}</div> : null; }
+import { AdminFeedback } from "@/components/admin/admin-state";
+
+export function ShiftFormError({ message }: { message?: string }) {
+  return message ? <AdminFeedback kind="error" message={message} /> : null;
+}

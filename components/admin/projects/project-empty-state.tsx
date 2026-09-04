@@ -1,11 +1,5 @@
-import { BriefcaseBusiness } from "lucide-react";
-
+import Link from "next/link";
+import { AdminEmptyState, adminStateActionClass } from "@/components/admin/admin-state";
 export function ProjectEmptyState({ filtered }: { filtered: boolean }) {
-  return (
-    <div className="rounded-lg border border-dashed border-slate-300 bg-white px-5 py-12 text-center">
-      <BriefcaseBusiness aria-hidden="true" className="mx-auto size-8 text-slate-400" />
-      <p className="mt-3 font-semibold text-slate-950">{filtered ? "条件に一致する案件がありません。" : "まだ案件が登録されていません。"}</p>
-      {filtered && <p className="mt-1 text-sm text-slate-600">検索条件や絞り込み条件を変更してください。</p>}
-    </div>
-  );
+  return <AdminEmptyState title={filtered ? "条件に一致する案件がありません。" : "まだ案件が登録されていません。"} description={filtered ? "検索条件や絞り込み条件を変更してください。" : "新しい案件を作成して業務・勤務先を設定してください。"}><Link href={filtered ? "/admin/projects" : "/admin/projects/new"} className={adminStateActionClass}>{filtered ? "条件をクリア" : "案件を作成"}</Link></AdminEmptyState>;
 }

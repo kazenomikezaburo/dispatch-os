@@ -18,7 +18,9 @@ export type BulkShiftOverrides = Record<string, BulkShiftOverride>;
 const datePattern = /^\d{4}-\d{2}-\d{2}$/;
 
 export function isValidDateOnly(value: string) {
-  return datePattern.test(value) && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;
+  if (!datePattern.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
 }
 
 export function generateDates(start: string, end: string, weekdays: number[]) {
@@ -45,4 +47,3 @@ export function normalizeOverride(base: BulkShiftConfig, candidate: BulkShiftCon
       .map((key) => [key, candidate[key]]),
   ) as BulkShiftOverride;
 }
-

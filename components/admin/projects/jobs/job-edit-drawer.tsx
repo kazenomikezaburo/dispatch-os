@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, X } from "lucide-react";
+import { AdminFeedback } from "@/components/admin/admin-state";
 import { Drawer } from "@/components/admin/drawer";
 import type { ProjectDetailJob } from "@/lib/admin/projects/project-detail-types";
 import type { JobFormOptions } from "@/lib/admin/projects/job-form-types";
@@ -10,16 +11,18 @@ import { JobForm } from "./form/job-create-form";
 
 export function JobEditDrawer({ job, options }: { job: ProjectDetailJob; options: JobFormOptions }) {
   const router = useRouter();
+  const [saved, setSaved] = useState(false);
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [formKey, setFormKey] = useState(0);
   const close = useCallback(() => { if (!pending) setOpen(false); }, [pending]);
   const reloadLatest = useCallback(() => { if (pending) return; setOpen(false); setFormKey((value) => value + 1); router.refresh(); }, [pending, router]);
-  const complete = useCallback(() => { setPending(false); setOpen(false); setFormKey((value) => value + 1); router.refresh(); }, [router]);
+  const complete = useCallback(() => { setSaved(true); setPending(false); setOpen(false); setFormKey((value) => value + 1); router.refresh(); }, [router]);
   const editOptions = options.workplaces.some((workplace) => workplace.id === job.workplace.id) ? options : { ...options, workplaces: [job.workplace, ...options.workplaces] };
 
   return <>
-    <button type="button" onClick={() => setOpen(true)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control border border-border-strong bg-surface px-3 text-sm font-medium text-secondary-foreground hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"><Pencil aria-hidden="true" className="size-4" />編集</button>
+    <button type="button" onClick={() => { setSaved(false); setOpen(true); }} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control border border-border-strong bg-surface px-3 text-sm font-medium text-secondary-foreground hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"><Pencil aria-hidden="true" className="size-4" />編集</button>
+    {saved && <AdminFeedback kind="success" message="業務情報を保存しました。" />}
     <Drawer open={open} titleId={`job-edit-drawer-title-${job.id}`} closeDisabled={pending} onClose={close}>
       <header className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-border bg-surface px-4 py-4 sm:px-6">
         <div><h2 id={`job-edit-drawer-title-${job.id}`} className="text-xl font-semibold text-foreground">業務・勤務先を編集</h2><p className="mt-1 text-sm text-foreground-muted">{job.name}の業務情報を変更します。</p></div>
