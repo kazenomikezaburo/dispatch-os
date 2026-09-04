@@ -1,4 +1,5 @@
 import type { ShiftDetailAssignment } from "@/lib/admin/shifts/shift-detail-types";
+import Link from "next/link";
 import { AssignmentCancelButton } from "./assignment-cancel-button";
 import { AssignmentStatusBadge } from "./assignment-status-badge";
 import { Section } from "./shift-info-section";
@@ -17,6 +18,6 @@ export function ShiftAssignmentList({
   const now = new Date();
   return <Section title={`配置済みスタッフ ${assignments.length}名`}>{assignments.length === 0 ? <p className="rounded-md bg-slate-50 px-4 py-5 text-sm text-slate-600">まだスタッフは配置されていません。</p> : <ul className="divide-y divide-slate-200">{assignments.map((assignment) => {
     const actions = getAssignmentAbsenceActions({ status: assignment.status, startsAt, startWorkAt: assignment.startWorkAt ?? null }, now);
-    return <li key={assignment.id} className="flex min-h-14 flex-col justify-between gap-3 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center"><div><p className="font-semibold text-slate-950">{assignment.workerName}</p><div className="mt-2"><AssignmentStatusBadge status={assignment.status} /></div></div><div className="flex flex-col gap-2 sm:items-end">{(assignment.status === "assigned" || assignment.status === "confirmed") && <AssignmentCancelButton shiftId={shiftId} assignmentId={assignment.id} workerName={assignment.workerName} startsAt={startsAt} />}<AssignmentAbsenceActions shiftId={shiftId} assignmentId={assignment.id} workerName={assignment.workerName} {...actions} /></div></li>;
+    return <li key={assignment.id} className="flex min-h-14 flex-col justify-between gap-3 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center"><div><Link href={`/admin/workers/${assignment.workerId}`} className="inline-flex min-h-11 items-center font-semibold text-link hover:underline">{assignment.workerName}</Link><div className="mt-2"><AssignmentStatusBadge status={assignment.status} /></div></div><div className="flex flex-col gap-2 sm:items-end">{(assignment.status === "assigned" || assignment.status === "confirmed") && <AssignmentCancelButton shiftId={shiftId} assignmentId={assignment.id} workerName={assignment.workerName} startsAt={startsAt} />}<AssignmentAbsenceActions shiftId={shiftId} assignmentId={assignment.id} workerName={assignment.workerName} {...actions} /></div></li>;
   })}</ul>}</Section>;
 }

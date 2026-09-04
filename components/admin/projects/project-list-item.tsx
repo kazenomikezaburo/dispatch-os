@@ -17,16 +17,16 @@ export function ProjectListItem({ project }: { project: ProjectListItemType }) {
   const progressWidth = Math.min(Math.max(project.progress, 0), 100);
   return (
     <li className="p-4 sm:p-5">
-      <article aria-labelledby={`project-${project.id}`} className="grid gap-4 lg:grid-cols-[minmax(12rem,1.5fr)_10rem_5rem_9rem_minmax(10rem,1fr)_7rem] lg:items-center">
+      <article aria-labelledby={`project-${project.id}`} className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_3rem_6rem_minmax(0,1fr)_5rem] lg:items-center">
         <div className="min-w-0">
           <h3 id={`project-${project.id}`} className="text-sm font-semibold">
-            <Link href={`/admin/projects/${project.id}`} className="inline-flex min-h-11 items-center text-blue-700 underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 lg:min-h-0">
+            <Link href={`/admin/projects/${project.id}`} className="inline-flex min-h-11 items-center text-blue-700 underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 ">
               {project.name}
             </Link>
           </h3>
           <p className="text-xs text-slate-500">{project.clientName} / 業務・勤務先 {project.jobCount}件</p>
         </div>
-        <div><p className="text-xs font-medium text-slate-500 lg:hidden">期間</p><p className="mt-1 text-sm text-slate-800 lg:mt-0 lg:whitespace-nowrap">{formatDate(project.startDate)}〜{formatDate(project.endDate)}</p></div>
+        <div><p className="text-xs font-medium text-slate-500 lg:hidden">期間</p><p className="mt-1 text-sm text-slate-800 lg:mt-0 lg:break-words">{formatDate(project.startDate)}〜{formatDate(project.endDate)}</p></div>
         <div><p className="text-xs font-medium text-slate-500 lg:hidden">シフト</p><p className="mt-1 text-sm font-medium text-slate-900 lg:mt-0">{project.shiftCount}件</p></div>
         <div>
           <p className="text-xs font-medium text-slate-500 lg:hidden">必要 / 配置</p>

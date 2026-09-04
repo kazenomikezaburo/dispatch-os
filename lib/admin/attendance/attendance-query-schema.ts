@@ -16,11 +16,13 @@ export function isCalendarDate(value: string) {
 const schema = z.object({
   date: z.string().refine(isCalendarDate).catch(() => getTokyoDate()),
   state: z.enum(["all", ...ADMIN_ATTENDANCE_STATES]).catch("all"),
+  confirmation: z.enum(["all", "unconfirmed", "confirmed", "corrected"]).catch("all"),
   attention: z.enum(["all", "needs_attention"]).catch("all"),
   q: z.string().trim().max(100).catch(""),
+  page: z.coerce.number().int().min(1).catch(1),
 });
 export function parseAttendanceQuery(value: Record<string, string | string[] | undefined>): AttendanceQuery {
-  return schema.parse({ date: firstValue(value.date) ?? getTokyoDate(), state: firstValue(value.state) ?? "all", attention: firstValue(value.attention) ?? "all", q: firstValue(value.q) ?? "" });
+  return schema.parse({ date: firstValue(value.date) ?? getTokyoDate(), state: firstValue(value.state) ?? "all", confirmation: firstValue(value.confirmation) ?? "all", attention: firstValue(value.attention) ?? "all", q: firstValue(value.q) ?? "", page: firstValue(value.page) ?? "1" });
 }
 export function shiftDate(value: string, days: number) {
   const date = new Date(`${value}T00:00:00Z`); date.setUTCDate(date.getUTCDate() + days); return date.toISOString().slice(0, 10);

@@ -2,14 +2,12 @@ import { MapPin } from "lucide-react";
 import Link from "next/link";
 import type { ProjectDetail, ProjectDetailJob } from "@/lib/admin/projects/project-detail-types";
 import { JOB_STATUS_LABELS } from "@/lib/admin/projects/project-detail-rules";
-import { ShiftCreateDrawer } from "@/components/admin/projects/shifts/shift-create-drawer";
 import { JobEditDrawer } from "@/components/admin/projects/jobs/job-edit-drawer";
 import type { JobFormOptions } from "@/lib/admin/projects/job-form-types";
 
 const money = new Intl.NumberFormat("ja-JP");
 
 export function ProjectJobItem({ project, job, formOptions }: { project: Pick<ProjectDetail, "id" | "name" | "status">; job: ProjectDetailJob; formOptions?: JobFormOptions }) {
-  const shiftOptions = { project, job: { id: job.id, name: job.name, status: job.status, workplaceName: job.workplace.name, hourlyWage: job.hourlyWage, transportationFeeCap: job.transportationFeeCap } };
   return <li className={`border-b bg-white px-4 py-5 last:border-b-0 sm:px-5 ${job.shortage > 0 ? "border-amber-200" : "border-slate-200"}`}>
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
@@ -17,7 +15,7 @@ export function ProjectJobItem({ project, job, formOptions }: { project: Pick<Pr
           <p className="mt-2 text-sm font-medium text-slate-800">{job.workplace.name}</p>
           <p className="mt-1 flex items-start gap-2 text-sm text-slate-500"><MapPin aria-hidden="true" className="mt-0.5 size-4 shrink-0" />{job.workplace.address}</p>
         </div>
-        <div className="flex flex-wrap gap-2 lg:justify-end"><ShiftCreateDrawer options={shiftOptions} createHref={`/admin/projects/${project.id}/jobs/${job.id}/shifts/new`} /><Link href={`/admin/projects/${project.id}/jobs/${job.id}/shifts/bulk-new`} className="inline-flex min-h-11 items-center px-2 text-sm font-semibold text-slate-700 underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">複数日まとめて追加</Link>{formOptions && <JobEditDrawer job={job} options={formOptions} />}</div>
+        <div className="flex flex-wrap gap-2 lg:justify-end"><Link href={`/admin/projects/${project.id}/jobs/${job.id}/shifts/new`} className="inline-flex min-h-11 items-center rounded-control border border-border-strong bg-surface px-4 text-sm font-medium text-link hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">シフトを作成</Link>{formOptions && <JobEditDrawer job={job} options={formOptions} />}</div>
       </div>
       <dl className="mt-5 grid grid-cols-2 gap-4 border-t border-slate-200 pt-4 text-sm sm:grid-cols-3 lg:grid-cols-6"><div><dt className="text-slate-500">シフト</dt><dd className="mt-1 font-semibold text-slate-950">{job.shiftCount}件</dd></div><div><dt className="text-slate-500">必要</dt><dd className="mt-1 font-semibold text-slate-950">{job.requiredWorkers}名</dd></div><div><dt className="text-slate-500">配置</dt><dd className="mt-1 font-semibold text-slate-950">{job.assignedWorkers}名</dd></div><div><dt className="text-slate-500">不足</dt><dd className={`mt-1 font-semibold ${job.shortage > 0 ? "text-red-700" : "text-slate-950"}`}>{job.shortage}名</dd></div><div><dt className="text-slate-500">時給</dt><dd className="mt-1 font-semibold text-slate-950">{job.hourlyWage === null ? "未設定" : `${money.format(job.hourlyWage)}円`}</dd></div><div><dt className="text-slate-500">交通費上限</dt><dd className="mt-1 font-semibold text-slate-950">{job.transportationFeeCap === null ? "未設定" : `${money.format(job.transportationFeeCap)}円`}</dd></div></dl>
   </li>;

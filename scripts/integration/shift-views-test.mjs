@@ -1,0 +1,58 @@
+// Pure date/view/read-pagination tests. No network, Auth, fixtures or DB writes.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import ts from 'typescript';
+import Module, { createRequire } from 'node:module';
+const loadTs = createRequire(import.meta.url);
+const resolve = Module._resolveFilename;
+Module._resolveFilename = function (name, ...args) {
+  return resolve.call(this, name.startsWith('@/') ? path.resolve(name.slice(2)) : name, ...args);
+};
+loadTs.extensions['.ts'] = (module, filename) => {
+  module._compile(ts.transpileModule(fs.readFileSync(filename, 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }, fileName: filename }).outputText, filename);
+};
+const rules = loadTs('../../lib/admin/shifts/shift-view-rules.ts');
+const { parseShiftQuery } = loadTs('../../lib/admin/shifts/shift-query-schema.ts');
+const { buildShiftList } = loadTs('../../lib/admin/shifts/shift-list-rules.ts');
+const { readAllPages } = loadTs('../../lib/admin/shifts/read-all-pages.ts');
+let count = 0;
+async function test(name, fn) { await fn(); count++; console.log(`PASS ${name}`); }
+const now = new Date('2026-09-02T15:30:00Z');
+const parse = (raw) => rules.parseShiftView(raw, now);
+const query = parseShiftQuery({q:' Project ', period:'past', status:'recruiting', staffing:'shortage'});
+await test('Tokyo today at UTC previous day', () => assert.equal(parse({}).today, '2026-09-03'));
+await test('default list keeps period behavior', () => {assert.equal(parse({}).view, 'list'); assert.equal(rules.shiftViewRange(parse({})), undefined);});
+await test('invalid view falls back to list', () => assert.equal(parse({view:'year'}).view, 'list'));
+await test('invalid week date falls back safely', () => assert.equal(parse({view:'week',date:'2028-02-30'}).date, '2026-09-03'));
+await test('invalid month falls back safely', () => assert.equal(parse({view:'calendar',month:'2028-13'}).month, '2026-09'));
+await test('arrays take first value', () => assert.equal(parse({view:['week','calendar'],date:['2099-01-27','bad']}).date, '2099-01-27'));
+await test('malformed and extreme dates do not throw', () => { for (const date of ['','foo','2028-13-40','0000-01-01','9999-12-31','+100000-01-01','2026-2-3']) assert.doesNotThrow(()=>rules.shiftViewRange(parse({view:'week',date}))); });
+await test('leap year accepted, nonleap rejected', () => {assert.equal(rules.isShiftDate('2028-02-29'),true);assert.equal(rules.isShiftDate('2027-02-29'),false);});
+await test('Monday to Sunday', () => assert.deepEqual(rules.weekDays('2026-09-03'), ['2026-08-31','2026-09-01','2026-09-02','2026-09-03','2026-09-04','2026-09-05','2026-09-06']));
+await test('Sunday belongs to previous Monday', () => assert.equal(rules.weekDays('2026-09-06')[0], '2026-08-31'));
+await test('year boundary', () => assert.deepEqual([rules.weekDays('2027-01-01')[0],rules.weekDays('2027-01-01')[6]],['2026-12-28','2027-01-03']));
+await test('week prev next roundtrip', () => assert.equal(rules.addDays(rules.addDays('2099-01-27',7),-7),'2099-01-27'));
+await test('month prev next roundtrip', () => assert.equal(rules.adjacentMonth(rules.adjacentMonth('2026-12',1),-1),'2026-12'));
+await test('calendar leap month includes Feb29', () => { const days=rules.calendarDays('2028-02');assert.ok(days.includes('2028-02-29'));assert.equal(days[0],'2028-01-31');assert.equal(days.length,35); });
+await test('six-week calendar bounded42', () => { const days=rules.calendarDays('2026-08');assert.equal(days.length,42);assert.equal(days[0],'2026-07-27');assert.equal(days.at(-1),'2026-09-06'); });
+await test('four-week February receives quiet spillover fifth row', () => assert.equal(rules.calendarDays('2027-02').length,35));
+await test('all months remain Monday-Sunday and35to42 days', () => {for(let m=1;m<=12;m++){const days=rules.calendarDays(`2028-${String(m).padStart(2,'0')}`);assert.ok([35,42].includes(days.length));assert.equal(new Date(days[0]).getUTCDay(),1);assert.equal(new Date(days.at(-1)).getUTCDay(),0);}});
+await test('Tokyo inclusive start exclusive end', () => assert.deepEqual(rules.shiftViewRange(parse({view:'week',date:'2026-09-03'})),{start:'2026-08-30T15:00:00.000Z',end:'2026-09-06T15:00:00.000Z'}));
+await test('day list overrides broad period', () => assert.deepEqual(rules.shiftViewRange(parse({view:'list',date:'2099-01-27'})),{start:'2099-01-26T15:00:00.000Z',end:'2099-01-27T15:00:00.000Z'}));
+await test('view switch preserves shared filters', () => {const url=new URL(rules.shiftViewHref(query,parse({view:'week',date:'2099-01-27'}),{view:'calendar'}),'http://localhost');assert.equal(url.pathname,'/admin/shifts');for(const [key,val] of Object.entries(query))assert.equal(url.searchParams.get(key),val);assert.equal(url.searchParams.get('month'),'2099-01');assert.equal(url.searchParams.has('date'),false);});
+await test('calendar day link retains exact date', () => assert.ok(rules.shiftViewHref(query,parse({view:'calendar',month:'2099-01'}),{view:'list',date:'2099-01-27'}).includes('date=2099-01-27')));
+await test('calendar to week anchors in selected month', () => assert.ok(rules.shiftViewHref(query,parse({view:'calendar',month:'2099-01'}),{view:'week'}).includes('date=2099-01-01')));
+await test('switch to list restores period without implicit day filter', () => assert.ok(!rules.shiftViewHref(query,parse({view:'week',date:'2099-01-27'}),{view:'list'}).includes('date=')));
+const row = {id:'b',startsAt:'2099-01-26T15:00:00Z',endsAt:'2099-01-27T03:00:00Z',projectName:'P',jobName:'J',workplaceName:'W',requiredWorkers:3,assignedWorkers:1,shortage:2,applicationCount:0,status:'recruiting',staffingState:'shortage'};
+await test('group by Tokyo start date not UTC', () => assert.equal(rules.groupShiftsByDay([row],['2099-01-27']).get('2099-01-27').length,1));
+await test('same day shifts retained and sorted', () => {const rows=[row,{...row,id:'a'},{...row,id:'c',startsAt:'2099-01-27T01:00:00Z'}];assert.deepEqual(rules.groupShiftsByDay(rows,['2099-01-27']).get('2099-01-27').map(r=>r.id),['a','b','c']);assert.equal(rows[0].id,'b');});
+await test('empty days present; out of range shifts excluded', () => assert.deepEqual(rules.groupShiftsByDay([row],['2099-01-28']).get('2099-01-28'),[]));
+await test('preview caps ten shifts at2 plus8', () => {const p=rules.calendarPreview(Array.from({length:10},(_,i)=>({...row,id:String(i)})));assert.equal(p.visible.length,2);assert.equal(p.remaining,8);});
+await test('empty preview', () => assert.deepEqual(rules.calendarPreview([]),{visible:[],remaining:0}));
+await test('overnight end date made explicit', () => assert.equal(rules.shiftTimeLabel({...row,endsAt:'2099-01-27T16:00:00Z'}), `00:00–${rules.shiftDayLabel('2099-01-28')} 01:00`));
+await test('reuse active assignment shortage rule', () => {const [actual]=buildShiftList([row],['b','b'],['b'],parseShiftQuery({period:'all'}));assert.equal(actual.shortage,2);assert.equal(actual.assignedWorkers,1);assert.equal(actual.applicationCount,2);});
+await test('paging respects lower server caps', async () => {const all=Array.from({length:1201},(_,id)=>({id}));let calls=0;const result=await readAllPages(async(from,to)=>{calls++;assert.equal(to-from,499);return {data:all.slice(from,from+400),error:null,count:1201};});assert.equal(result.length,1201);assert.equal(calls,4);});
+await test('query error rejects instead of empty success', async () => assert.rejects(readAllPages(async()=>({data:null,error:new Error('denied'),count:null})),/denied/));
+await test('incomplete query fails visibly', async () => assert.rejects(readAllPages(async()=>({data:[],error:null,count:2})),/Incomplete/));
+console.log(`Shift views: ${count}/${count} passed`);

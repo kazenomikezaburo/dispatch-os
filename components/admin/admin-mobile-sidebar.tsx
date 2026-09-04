@@ -1,11 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { useEffect, useRef, type RefObject } from "react";
-import { cn } from "@/lib/utils/cn";
-import { adminNavigation, isAdminNavItemActive } from "./admin-nav";
+import { AdminNavLinks } from "./admin-nav-links";
+import { DialogFocusGuard, trapDialogFocus } from "./dialog-focus";
 
 type AdminMobileSidebarProps = {
   open: boolean;
@@ -104,6 +103,7 @@ export function AdminMobileSidebar({
         onClose();
       }}
       onKeyDown={(event) => {
+        trapDialogFocus(event);
         if (event.key === "Escape") {
           event.preventDefault();
           onClose();
@@ -113,15 +113,16 @@ export function AdminMobileSidebar({
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
-      className="fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-[min(20rem,calc(100vw-3rem))] max-w-full overflow-hidden bg-white p-0 text-slate-950 shadow-2xl backdrop:bg-slate-950/45 open:flex open:flex-col lg:hidden motion-reduce:transition-none"
+      className="fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-screen max-w-full overflow-hidden bg-surface p-0 text-foreground shadow-overlay backdrop:bg-surface-overlay sm:w-[28rem] open:flex open:flex-col lg:hidden motion-reduce:transition-none"
     >
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-4">
+      <DialogFocusGuard edge="start" />
+      <header className="flex h-17 shrink-0 items-center justify-between border-b border-slate-200 px-4">
         <div className="min-w-0">
           <h2
             id="admin-mobile-navigation-title"
             className="truncate font-semibold text-slate-950"
           >
-            派遣業務OS
+            Dispatch OS
           </h2>
           <p className="truncate text-xs text-slate-500">Dispatch Manager</p>
         </div>
@@ -139,31 +140,9 @@ export function AdminMobileSidebar({
         aria-label="モバイル管理画面ナビゲーション"
         className="flex-1 space-y-1 overflow-y-auto overscroll-contain p-3"
       >
-          {adminNavigation.map((item) => {
-            const active = isAdminNavItemActive(pathname, item.href);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "flex min-h-12 items-center gap-3 rounded-r-md border-l-2 px-4 text-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600",
-                  active
-                    ? "border-blue-700 bg-blue-50 font-semibold text-blue-950"
-                    : "border-transparent font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-950 active:bg-slate-100",
-                )}
-              >
-                <Icon
-                  aria-hidden="true"
-                  className={cn("size-5 shrink-0", active && "text-blue-700")}
-                />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
+          <AdminNavLinks onNavigate={onClose} />
       </nav>
+      <DialogFocusGuard edge="end" />
     </dialog>
   );
 }

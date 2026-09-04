@@ -1,4 +1,5 @@
 import { connection } from "next/server";
+import { AdminErrorState } from "@/components/admin/admin-state";
 import { AdminPage as AdminPageLayout } from "@/components/admin/admin-page";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { DashboardAlertList } from "@/components/admin/dashboard/dashboard-alert-list";
@@ -13,11 +14,8 @@ export default async function AdminPage() {
   if (!result.ok) {
     return (
       <AdminPageLayout>
-        <AdminPageHeader title="管理ダッシュボード" />
-        <div role="alert" className="rounded-lg border border-red-200 bg-white p-5">
-          <p className="font-semibold text-slate-950">ダッシュボードを取得できませんでした。</p>
-          <p className="mt-1 text-sm text-slate-600">時間をおいて再度お試しください。</p>
-        </div>
+        <AdminPageHeader title="ホーム" />
+        <AdminErrorState title="ダッシュボードを取得できませんでした。" />
       </AdminPageLayout>
     );
   }
@@ -26,7 +24,7 @@ export default async function AdminPage() {
   return (
     <AdminPageLayout>
       <AdminPageHeader
-        title="管理ダッシュボード"
+        title="ホーム"
         description="今日の稼働状況と、いま対応が必要なことを確認できます。"
       />
       <DashboardSummary summary={data.summary} />

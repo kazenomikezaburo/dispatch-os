@@ -12,7 +12,7 @@ import type { AttendanceInput, AttendanceQuery } from "../../lib/admin/attendanc
 const config = readLocalConfig(); await prepareAuthFixtures(config); const clients = await createActorClients(config);
 const results: boolean[] = []; const record = (n: string, pass: boolean, actual: string) => { results.push(pass); console.log(`ATTENDANCE-ADMIN-${n} ${pass ? "PASS" : "FAIL"}: ${actual}`); };
 const base: AttendanceInput = { id: "a", shiftId: "s", status: "assigned", workerName: "山田 太郎", startsAt: "2026-08-22T00:00:00Z", endsAt: "2026-08-22T09:00:00Z", projectName: "展示会", jobName: "受付", workplaceName: "会場", startWorkAt: null, endWorkAt: null };
-const all: AttendanceQuery = { date: "2026-08-22", state: "all", attention: "all", q: "" };
+const all: AttendanceQuery = { date: "2026-08-22", state: "all", confirmation: "all", attention: "all", q: "", page: 1 };
 const item = (changes: Partial<AttendanceInput> = {}, now = "2026-08-21T23:00:00Z") => deriveAdminAttendance({ ...base, ...changes }, new Date(now));
 
 const managerOwn = await clients.managerA.from("assignments").select("id").eq("id", IDS.assignments.workerBN1);

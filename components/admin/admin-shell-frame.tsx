@@ -28,13 +28,13 @@ export function AdminShellFrame({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-950">
+    <div className="min-h-screen bg-background text-foreground">
       <AdminSidebar collapsed={collapsed} onToggle={toggleSidebar} />
       <div
         data-sidebar-state={collapsed ? "collapsed" : "expanded"}
         className={cn(
           "min-w-0 transition-[padding-left] duration-200 motion-reduce:transition-none",
-          collapsed ? "lg:pl-16" : "lg:pl-60",
+          collapsed ? "lg:pl-18" : "lg:pl-60",
         )}
       >
         <AdminHeader userMenu={userMenu} />

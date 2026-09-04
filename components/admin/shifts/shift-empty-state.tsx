@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { AdminEmptyState, adminStateActionClass } from "@/components/admin/admin-state";
 export function ShiftEmptyState({ filtered }: { filtered: boolean }) {
-  return <section className="rounded-lg border border-slate-200 bg-white px-5 py-12 text-center"><h2 className="font-semibold text-slate-950">{filtered ? "条件に一致するシフトがありません。" : "表示できるシフトがありません。"}</h2>{filtered && <p className="mt-2 text-sm text-slate-600">検索条件を変更してみてください。</p>}</section>;
+  return <AdminEmptyState title={filtered ? "条件に一致するシフトがありません。" : "表示できるシフトがありません。"} description={filtered ? "検索条件を変更してください。" : "案件の業務からシフトを作成してください。"}><Link href={filtered ? "/admin/shifts" : "/admin/projects"} className={adminStateActionClass}>{filtered ? "条件をクリア" : "案件を選ぶ"}</Link></AdminEmptyState>;
 }
