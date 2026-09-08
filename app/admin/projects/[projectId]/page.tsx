@@ -14,6 +14,7 @@ import { getProjectDetail } from "@/lib/admin/projects/get-project-detail";
 import { getJobFormOptions } from "@/lib/admin/projects/get-job-form-options";
 import { getProjectFormOptions } from "@/lib/admin/projects/get-project-form-options";
 import { uuidSchema } from "@/lib/utils/uuid-schema";
+import { placementHref, parsePlacementQuery } from "@/lib/admin/placement/placement-rules";
 
 export default async function ProjectDetailPage({ params }: PageProps<"/admin/projects/[projectId]">) {
   await connection();
@@ -33,7 +34,7 @@ export default async function ProjectDetailPage({ params }: PageProps<"/admin/pr
     <section id="project-operations" className="scroll-mt-24 rounded-panel border border-border bg-surface p-5">
       <h2 className="text-lg font-semibold">案件の運用</h2>
       <p className="mt-2 text-sm text-foreground-secondary">応募・配置・事前確認は、各シフトの詳細で操作できます。</p>
-      <div className="mt-4 flex flex-wrap gap-3"><a href="#project-shifts" className={adminStateActionClass}>案件内のシフトを確認</a><Link href={`/admin/shifts?q=${encodeURIComponent(project.name)}`} className={adminStateActionClass}>シフト一覧で検索</Link></div>
+      <div className="mt-4 flex flex-wrap gap-3"><a href="#project-shifts" className={adminStateActionClass}>案件内のシフトを確認</a><Link href={`/admin/shifts?q=${encodeURIComponent(project.name)}`} className={adminStateActionClass}>シフト一覧で検索</Link><Link href={placementHref(parsePlacementQuery({ project: project.id }))} className={adminStateActionClass}>配置・休憩回し</Link></div>
     </section>
   </AdminPage>;
 }

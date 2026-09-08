@@ -26,7 +26,7 @@ export const adminNavigationGroups: readonly AdminNavGroup[] = [
   { label: "案件・運用", items: [
     { label: "案件", href: "/admin/projects", icon: BriefcaseBusiness, availability: "implemented" },
     { label: "シフト", href: "/admin/shifts", icon: CalendarDays, availability: "implemented" },
-    future("配置・休憩回し", Users),
+    { label: "配置・休憩回し", href: "/admin/placement", icon: Users, availability: "implemented" },
     { label: "前日確認", href: "/admin/pre-shift", icon: ClipboardClock, availability: "implemented" },
     future("当日運用", ClipboardClock),
   ] },
