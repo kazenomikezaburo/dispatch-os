@@ -1,0 +1,16 @@
+import assert from "node:assert/strict";
+import {assertLocalSupabaseUrl,fixtureIds,IDS,SCENARIOS,times} from "../dev/setup-day-of-fixtures.ts";
+let passed=0;const test=(name,fn)=>{fn();passed++;console.log(`PASS ${name}`)};
+test("matrix contains every required scenario",()=>assert.deepEqual(SCENARIOS.map(s=>s.key),["scheduled","start-missing","late","working","finished","absent","no-show","pre-shift-unavailable","placement-break"]));
+test("fixture identities are globally unique",()=>{const ids=fixtureIds();const flat=[...ids.workers,...ids.shifts,...ids.assignments,...ids.events,...ids.parents,...ids.placement];assert.equal(new Set(flat).size,flat.length)});
+test("each scenario owns a Worker Shift and Assignment",()=>assert.equal(Object.keys(IDS).length,SCENARIOS.length));
+test("localhost API is accepted",()=>assert.equal(assertLocalSupabaseUrl("http://localhost:54321/path"),"http://localhost:54321"));
+test("loopback API is accepted",()=>assert.equal(assertLocalSupabaseUrl("http://127.0.0.1:54321"),"http://127.0.0.1:54321"));
+test("remote HTTPS is rejected",()=>assert.throws(()=>assertLocalSupabaseUrl("https://example.supabase.co"),/non-local/));
+test("lookalike hostname is rejected",()=>assert.throws(()=>assertLocalSupabaseUrl("http://localhost.example.com:54321"),/non-local/));
+test("scheduled and unavailable shifts are future",()=>{const a=new Date("2026-01-01T00:00:00Z");for(const k of ["scheduled","pre-shift-unavailable"])assert.ok(Date.parse(times(a,k).start)>a.getTime())});
+test("finished shift ends before anchor",()=>{const a=new Date("2026-01-01T00:00:00Z");assert.ok(Date.parse(times(a,"finished").end)<a.getTime())});
+test("active scenarios contain anchor",()=>{const a=new Date("2026-01-01T00:00:00Z");for(const k of ["start-missing","late","working","absent","no-show","placement-break"]){const t=times(a,k);assert.ok(Date.parse(t.start)<a.getTime()&&a.getTime()<Date.parse(t.end))}});
+test("all time ranges are ordered",()=>{const a=new Date();for(const s of SCENARIOS){const t=times(a,s.key);assert.ok(Date.parse(t.start)<Date.parse(t.end))}});
+test("cleanup target inventory is exact and bounded",()=>{const ids=fixtureIds();assert.equal(ids.workers.length,9);assert.equal(ids.shifts.length,9);assert.equal(ids.assignments.length,9);assert.equal(ids.events.length,5)});
+console.log(`Day-of fixture matrix: ${passed}/12 passed`);
