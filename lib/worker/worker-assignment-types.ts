@@ -1,6 +1,7 @@
 import type { PreShiftConfirmationState } from "@/lib/domain/pre-shift-confirmation";
 import type { HealthStatus } from "./pre-shift-confirmation-schema";
 import type { WorkerAttendanceState } from "@/lib/domain/worker-attendance";
+import type { WorkerOperationalIncident } from "./incidents/worker-incident-ui";
 
 export type WorkerConfirmation = {
   canWork: boolean;
@@ -10,6 +11,8 @@ export type WorkerConfirmation = {
 
 export type WorkerAssignment = {
   id: string;
+  assignmentStatus: "assigned" | "confirmed" | "completed" | "cancelled_by_worker" | "cancelled_by_company" | "absent" | "no_show";
+  shiftStatus: string;
   startsAt: string;
   endsAt: string;
   breakMinutes: number | null;
@@ -32,6 +35,8 @@ export type WorkerAssignment = {
   endWorkAt: string | null;
   canStartWork: boolean;
   canEndWork: boolean;
+  canCreateIncident: boolean;
+  incidents: WorkerOperationalIncident[];
 };
 
 export type WorkerAssignmentResult =

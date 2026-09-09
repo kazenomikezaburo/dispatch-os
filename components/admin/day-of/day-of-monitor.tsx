@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { adminStateActionClass } from "@/components/admin/admin-state";
 import { dayOfHref, operationalLabel, placementLabel, plannedBreakLabel, type DayOfItem, type DayOfQuery } from "@/lib/admin/day-of/day-of-rules";
+import { incidentCategoryLabels, type OperationalIncidentCategory } from "@/lib/worker/incidents/worker-incident-ui";
 
 const time = new Intl.DateTimeFormat("ja-JP", { timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit", hour12: false });
 const stateClass = (item: DayOfItem) => item.state === "no_show" || item.state === "absent" ? "bg-danger-subtle text-danger-foreground" : item.state === "start_missing" || item.lateMinutes > 0 ? "bg-warning-subtle text-warning-foreground" : item.state === "working" ? "bg-success-subtle text-success-foreground" : "bg-surface-muted text-foreground-secondary";
@@ -15,7 +16,7 @@ export function DayOfMonitor({ items, query }: { items: DayOfItem[]; query: DayO
       <div><p className="mb-1 text-xs font-medium text-foreground-muted md:hidden">勤務時間</p><p className="text-sm tabular-nums">{time.format(new Date(item.startsAt))}–{time.format(new Date(item.endsAt))}</p></div>
       <div><p className="mb-1 text-xs font-medium text-foreground-muted md:hidden">勤務状態</p><span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${stateClass(item)}`}>{operationalLabel(item)}</span></div>
       <div className="space-y-1 text-sm"><p className="mb-1 text-xs font-medium text-foreground-muted md:hidden">配置・前日確認</p><p>{placement.value ? `${placement.prefix}：${placement.value}` : "配置設定なし"}</p><p className="text-foreground-secondary">{item.breaks.length ? `${plannedBreakLabel(item, query.date)} ${time.format(new Date(item.breaks[0].startAt))}–${time.format(new Date(item.breaks[0].endAt))}` : "予定休憩なし"}</p><p className="text-xs text-foreground-muted">前日確認：{item.preShift ? item.preShift.canWork ? "提出済み" : "勤務不可回答" : "未提出"}</p></div>
-      <div><p className="mb-1 text-xs font-medium text-foreground-muted md:hidden">要確認</p>{item.attentionReason ? <p className={`text-sm font-semibold ${strong ? "text-danger-foreground" : "text-warning-foreground"}`}>{item.attentionReason}</p> : <p className="text-sm text-foreground-muted">なし</p>}</div>
+      <div><p className="mb-1 text-xs font-medium text-foreground-muted md:hidden">要確認</p>{item.incidentAttention&&<Link href={`/admin/incidents?incident=${item.incidentAttention.id}`} className={`mb-1 block text-sm font-semibold hover:underline ${item.incidentAttention.state==="open"?"text-warning-foreground":"text-info-foreground"}`}>{item.incidentAttention.state==="open"?"Help Request・未対応":"Help Request・対応中"}<span className="block text-xs font-normal">{incidentCategoryLabels[item.incidentAttention.category as OperationalIncidentCategory]}</span></Link>}{item.attentionReason ? <p className={`text-sm font-semibold ${strong ? "text-danger-foreground" : "text-warning-foreground"}`}>{item.attentionReason}</p> : !item.incidentAttention&&<p className="text-sm text-foreground-muted">なし</p>}</div>
       <div className="md:text-right"><Link id={`assignment-${item.assignmentId}`} href={dayOfHref(query, { assignment: item.assignmentId })} scroll={false} className={adminStateActionClass}>詳細</Link></div>
     </li>; })}</ul>
   </section>)}</div>;

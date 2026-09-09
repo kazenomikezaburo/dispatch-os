@@ -5,6 +5,7 @@ import {
   CalendarDays,
   ClipboardClock,
   LayoutDashboard,
+  MessageSquareWarning,
   Settings,
   Users,
 } from "lucide-react";
@@ -35,7 +36,7 @@ export const adminNavigationGroups: readonly AdminNavGroup[] = [
     { label: "スタッフ", href: "/admin/workers", icon: Users, availability: "implemented" },
   ] },
   { label: "集計", items: [future("月次勤怠", ClipboardClock), future("交通費", ClipboardClock), future("締め・NEO", ClipboardClock)] },
-  { label: "連絡", items: [future("問い合わせ・SOS", Users), future("お知らせ", Users), future("通知", Users)] },
+  { label: "連絡", items: [{ label: "ヘルプリクエスト", href: "/admin/incidents", icon: MessageSquareWarning, availability: "implemented" }, future("お知らせ", Users), future("通知", Users)] },
   { label: "ナレッジ", items: [future("FAQ", BriefcaseBusiness), future("マニュアル", BriefcaseBusiness), future("勤務ルール", BriefcaseBusiness)] },
   { label: "マスタ", items: [{ label: "取引先", href: "/admin/clients", icon: Building2, availability: "implemented" }, { label: "勤務先", href: "/admin/workplaces", icon: Building2, availability: "implemented" }] },
   { label: "設定", items: [{ label: "設定", href: "/admin/settings", icon: Settings, availability: "placeholder" }, future("監査ログ", ClipboardClock)] },

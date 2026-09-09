@@ -11,6 +11,7 @@ export type DayOfInput = {
   jobId:string; jobName:string; workplaceName:string; startWorkAt:string|null; endWorkAt:string|null;
   preShift:null|{canWork:boolean;submittedAt:string}; placements:{position:string;startAt:string;endAt:string}[];
   breaks:{startAt:string;endAt:string}[]; attendanceConfirmed:boolean;
+  incidentAttention:null|{id:string;state:"open"|"acknowledged";category:string;createdAt:string};
 };
 export type DayOfItem = DayOfInput & ReturnType<typeof deriveAdminAttendance> & { attentionReason:string|null };
 
@@ -25,8 +26,9 @@ export function buildDayOfItems(inputs:DayOfInput[],query:DayOfQuery,now=new Dat
   const items=inputs.map((input)=>{const attendance=deriveAdminAttendance({id:input.assignmentId,shiftId:input.shiftId,status:input.assignmentStatus,workerName:input.workerName,startsAt:input.startsAt,endsAt:input.endsAt,projectName:input.projectName,jobName:input.jobName,workplaceName:input.workplaceName,startWorkAt:input.startWorkAt,endWorkAt:input.endWorkAt},now,input.attendanceConfirmed?"confirmed":"unconfirmed");
     const attentionReason=attendance.state==="no_show"?"無断欠勤":attendance.state==="absent"?"欠勤":attendance.state==="start_missing"?"開始未報告":attendance.lateMinutes>0?`開始 ${attendance.lateMinutes}分遅れ`:attendance.earlyLeaveMinutes>0?`予定より ${attendance.earlyLeaveMinutes}分早く終了`:input.preShift?.canWork===false?"前日確認で勤務不可":null;
     return {...input,...attendance,attentionReason};});
-  const needle=query.q.toLocaleLowerCase("ja"); const matchState=(item:DayOfItem)=>query.state==="all"||(query.state==="attention"?Boolean(item.attentionReason):query.state==="scheduled"?(item.state==="scheduled"||item.state==="start_missing"):item.state===query.state);
-  return items.filter((item)=>(!needle||[item.workerName,item.staffCode,item.projectName,item.jobName,item.workplaceName].some(v=>v.toLocaleLowerCase("ja").includes(needle)))&&(!query.project||item.projectId===query.project)&&matchState(item)).sort((a,b)=>Number(!a.attentionReason)-Number(!b.attentionReason)||a.startsAt.localeCompare(b.startsAt)||a.workerName.localeCompare(b.workerName,"ja")||a.assignmentId.localeCompare(b.assignmentId));
+  const needle=query.q.toLocaleLowerCase("ja"); const matchState=(item:DayOfItem)=>query.state==="all"||(query.state==="attention"?Boolean(item.attentionReason||item.incidentAttention):query.state==="scheduled"?(item.state==="scheduled"||item.state==="start_missing"):item.state===query.state);
+  const priority=(item:DayOfItem)=>item.incidentAttention?.state==="open"?1:item.state==="no_show"?2:item.state==="absent"?3:item.state==="start_missing"?4:item.incidentAttention?.state==="acknowledged"?5:item.lateMinutes>0?6:item.earlyLeaveMinutes>0?7:item.preShift?.canWork===false?8:9;
+  return items.filter((item)=>(!needle||[item.workerName,item.staffCode,item.projectName,item.jobName,item.workplaceName].some(v=>v.toLocaleLowerCase("ja").includes(needle)))&&(!query.project||item.projectId===query.project)&&matchState(item)).sort((a,b)=>priority(a)-priority(b)||a.startsAt.localeCompare(b.startsAt)||a.workerName.localeCompare(b.workerName,"ja")||a.assignmentId.localeCompare(b.assignmentId));
 }
 export function operationalLabel(item:Pick<DayOfItem,"state"|"lateMinutes">){if(item.state==="scheduled")return"勤務前";if(item.state==="start_missing")return"開始未報告";if(item.state==="working")return item.lateMinutes>0?`勤務中（開始 ${item.lateMinutes}分遅れ）`:"勤務中";if(item.state==="finished")return"勤務終了";if(item.state==="absent")return"欠勤";return"無断欠勤";}
 export function placementLabel(item:Pick<DayOfItem,"placements">,date:string,now=new Date()){const current=item.placements.find(s=>Date.parse(s.startAt)<=now.getTime()&&now.getTime()<Date.parse(s.endAt));return {prefix:date===tokyoDate(now)&&current?"現在配置":"配置",value:current?.position??item.placements[0]?.position??null};}

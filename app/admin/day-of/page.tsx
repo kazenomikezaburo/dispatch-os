@@ -24,7 +24,7 @@ export default async function DayOfPage({ searchParams }: PageProps<"/admin/day-
     ["勤務予定", all.length, "名"],
     ["勤務中", all.filter((item) => item.state === "working").length, "名"],
     ["勤務終了", all.filter((item) => item.state === "finished").length, "名"],
-    ["要確認", all.filter((item) => item.attentionReason).length, "名"],
+    ["要確認", all.filter((item) => item.attentionReason || item.incidentAttention).length, "名"],
   ] as const;
   const filtered = Boolean(query.q || query.project || query.state !== "all");
 
