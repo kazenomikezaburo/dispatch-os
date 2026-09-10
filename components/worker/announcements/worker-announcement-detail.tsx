@@ -1,0 +1,8 @@
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { WorkerAnnouncementImportance } from "./worker-announcement-importance";
+import type { WorkerAnnouncementDetail as Announcement } from "@/lib/worker/announcements/worker-announcement-types";
+
+const date=new Intl.DateTimeFormat("ja-JP",{timeZone:"Asia/Tokyo",year:"numeric",month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit",hour12:false});
+
+export function WorkerAnnouncementDetail({announcement}:{announcement:Announcement}){return <main className="mx-auto max-w-3xl px-4 py-7 sm:px-6 sm:py-10"><Link href="/worker/announcements" className="inline-flex min-h-11 items-center gap-2 rounded-control text-sm font-semibold text-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"><ArrowLeft aria-hidden className="size-4"/>お知らせ一覧へ戻る</Link><article className="mt-4 overflow-hidden rounded-card border border-border bg-surface"><header className="border-b border-border p-5 sm:p-7"><WorkerAnnouncementImportance important={announcement.importance==="important"}/><h1 className="mt-3 break-words text-2xl font-semibold tracking-tight sm:text-3xl">{announcement.title}</h1><time dateTime={announcement.publishedAt} className="mt-3 block text-sm text-foreground-muted">公開 {date.format(new Date(announcement.publishedAt))}</time></header><section aria-labelledby="worker-announcement-body-title" className="p-5 sm:p-7"><h2 id="worker-announcement-body-title" className="sr-only">お知らせ本文</h2><p className="whitespace-pre-wrap break-words text-base leading-8 text-foreground-secondary">{announcement.body}</p></section></article></main>;}

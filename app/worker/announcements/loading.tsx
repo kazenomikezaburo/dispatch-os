@@ -1,0 +1,1 @@
+export default function WorkerAnnouncementsLoading(){return <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6"><section role="status" aria-live="polite" className="rounded-card border border-border bg-surface p-5"><h1 className="font-semibold">お知らせを読み込み中…</h1><p className="mt-1 text-sm text-foreground-muted">最新の内容を確認しています。</p></section></main>;}
