@@ -9,7 +9,7 @@ import { workerIncidentError } from "@/lib/worker/incidents/worker-incident-ui";
 import { adminIncidentTransitionSchema, type AdminIncidentTransitionInput } from "@/lib/admin/incidents/incident-action-schema";
 
 export type OperationalIncidentActionResult = { ok: true } | { ok: false; message: string; refresh: boolean };
-type RpcResult = { ok?: boolean; code?: string };
+type RpcResult = { ok?: boolean; code?: string; event_id?: string };
 
 function adminIncidentError(code: string | undefined) {
   if (code === "VERSION_CONFLICT" || code === "STATE_CONFLICT") return { message: "ヘルプリクエストの状態が更新されました。最新の状態を表示します。", refresh: true };
@@ -28,7 +28,19 @@ async function transitionAdminIncident(command: "acknowledge" | "resolve", input
     if(response.error)throw response.error;
     const result=response.data as RpcResult;
     if(!result.ok)return{ok:false,...adminIncidentError(result.code)};
-    revalidatePath("/admin/incidents"); revalidatePath("/admin/day-of"); revalidatePath("/worker");
+    if (typeof result.event_id === "string") {
+      try {
+        const projection = await supabase.rpc("project_incident_in_app_notification", { p_source_incident_event_id: result.event_id });
+        if (projection.error) console.error(`Failed to project ${command} incident notification`, projection.error);
+        else {
+          const projectionResult = projection.data as RpcResult;
+          if (!projectionResult.ok) console.error(`Failed to project ${command} incident notification`, projectionResult.code);
+        }
+      } catch (projectionError: unknown) {
+        console.error(`Failed to project ${command} incident notification`, projectionError);
+      }
+    } else console.error(`Failed to project ${command} incident notification`, "Missing source event ID");
+    revalidatePath("/admin/incidents"); revalidatePath("/admin/day-of"); revalidatePath("/worker"); revalidatePath("/worker/notifications");
     return{ok:true};
   } catch(error:unknown){console.error(`Failed to ${command} operational incident`,error);return{ok:false,...adminIncidentError(undefined)};}
 }
