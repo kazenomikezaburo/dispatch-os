@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth/get-current-profile";
 import { createClient } from "@/lib/supabase/server";
 import { projectFormSchema, type ProjectFormInput } from "@/lib/admin/projects/project-form-schema";
-import type { ProjectCreateResult, ProjectUpdateResult } from "@/lib/admin/projects/project-form-types";
+import type { ProjectCreateInlineResult, ProjectCreateResult, ProjectUpdateResult } from "@/lib/admin/projects/project-form-types";
 import { projectUpdateSchema, type ProjectUpdateInput } from "@/lib/admin/projects/project-update-schema";
 import { updateProjectCore } from "@/lib/admin/projects/update-project-core";
 import { editForbiddenMessage } from "@/lib/admin/edit/edit-action-result";
@@ -13,7 +13,7 @@ import { getEditActor } from "@/lib/admin/edit/get-edit-actor";
 
 const failure = (): ProjectCreateResult => ({ ok: false, message: "案件を作成できませんでした。入力内容を確認して再度お試しください。" });
 
-export async function createProject(input: ProjectFormInput): Promise<ProjectCreateResult> {
+async function createProjectCore(input: ProjectFormInput): Promise<ProjectCreateInlineResult> {
   const parsed = projectFormSchema.safeParse(input);
   if (!parsed.success) {
     const fieldErrors: ProjectCreateResult["fieldErrors"] = {};
@@ -47,12 +47,22 @@ export async function createProject(input: ProjectFormInput): Promise<ProjectCre
     }).select("id").single();
     if (result.error) throw result.error;
     revalidatePath("/admin/projects");
-    redirect(`/admin/projects/${result.data.id}`);
+    return { ok: true, projectId: result.data.id };
   } catch (error: unknown) {
     if (error && typeof error === "object" && "digest" in error && typeof error.digest === "string" && error.digest.startsWith("NEXT_REDIRECT")) throw error;
     console.error("Failed to create project", error);
     return failure();
   }
+}
+
+export async function createProject(input: ProjectFormInput): Promise<ProjectCreateResult> {
+  const result = await createProjectCore(input);
+  if (result.ok) redirect(`/admin/projects/${result.projectId}`);
+  return result;
+}
+
+export async function createProjectInline(input: ProjectFormInput): Promise<ProjectCreateInlineResult> {
+  return createProjectCore(input);
 }
 
 export async function updateProject(input: ProjectUpdateInput): Promise<ProjectUpdateResult> {

@@ -116,22 +116,22 @@ export function AdminMobileSidebar({
       className="fixed inset-y-0 left-0 m-0 h-dvh max-h-none w-screen max-w-full overflow-hidden bg-surface p-0 text-foreground shadow-overlay backdrop:bg-surface-overlay sm:w-[28rem] open:flex open:flex-col lg:hidden motion-reduce:transition-none"
     >
       <DialogFocusGuard edge="start" />
-      <header className="flex h-17 shrink-0 items-center justify-between border-b border-slate-200 px-4">
+      <header className="flex h-17 shrink-0 items-center justify-between border-b border-border px-4">
         <div className="min-w-0">
           <h2
             id="admin-mobile-navigation-title"
-            className="truncate font-semibold text-slate-950"
+            className="truncate font-semibold text-foreground"
           >
             Dispatch OS
           </h2>
-          <p className="truncate text-xs text-slate-500">Dispatch Manager</p>
+          <p className="truncate text-xs text-foreground-muted">Dispatch Manager</p>
         </div>
         <button
           ref={closeButtonRef}
           type="button"
           onClick={onClose}
           aria-label="管理画面メニューを閉じる"
-          className="flex size-11 shrink-0 items-center justify-center rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 active:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          className="flex size-11 shrink-0 items-center justify-center rounded-control border border-border-strong text-foreground-secondary hover:bg-surface-hover active:bg-secondary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"
         >
           <X aria-hidden="true" className="size-5" />
         </button>

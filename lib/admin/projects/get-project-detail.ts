@@ -21,11 +21,11 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
     const rows = (jobsResult.data ?? []) as unknown as JobRow[];
     const jobs: DetailJobInput[] = rows.map((job) => ({ id: job.id, projectId: job.project_id, name: job.name, status: job.status, description: job.description, workplace: job.workplaces, hourlyWage: job.hourly_wage, transportationFeeCap: job.transportation_fee_cap, dressCode: job.dress_code, requirements: job.requirements, mealNotes: job.meal_notes, recruitmentNotes: job.recruitment_notes, manualUrl: job.manual_url, updatedAt: job.updated_at, shifts: job.shift_slots.map((shift) => ({ id: shift.id, label: shift.label, startsAt: shift.starts_at, endsAt: shift.ends_at, status: shift.status, requiredWorkers: shift.required_workers })) }));
     const shiftIds = jobs.flatMap((job) => job.shifts.map((shift) => shift.id));
-    let activeAssignmentShiftIds: string[] = [];
-    if (shiftIds.length > 0) {
-      const assignmentsResult = await supabase.from("assignments").select("shift_slot_id").in("shift_slot_id", shiftIds).in("status", [...ACTIVE_ASSIGNMENT_STATUSES]);
+    const activeAssignmentShiftIds: string[] = [];
+    for (let index = 0; index < shiftIds.length; index += 100) {
+      const assignmentsResult = await supabase.from("assignments").select("shift_slot_id").in("shift_slot_id", shiftIds.slice(index, index + 100)).in("status", [...ACTIVE_ASSIGNMENT_STATUSES]);
       if (assignmentsResult.error) throw assignmentsResult.error;
-      activeAssignmentShiftIds = (assignmentsResult.data ?? []).map((assignment) => assignment.shift_slot_id);
+      activeAssignmentShiftIds.push(...(assignmentsResult.data ?? []).map((assignment) => assignment.shift_slot_id));
     }
     return { ok: true, detail: buildProjectDetail({ id: project.id, name: project.name, branchId: project.branch_id, clientId: project.client_id, clientName: project.clients?.name ?? "取引先未設定", status: project.status, startDate: project.start_date, endDate: project.end_date, description: project.description, updatedAt: project.updated_at }, jobs, activeAssignmentShiftIds) };
   } catch (error: unknown) {

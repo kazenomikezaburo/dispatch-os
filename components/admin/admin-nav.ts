@@ -27,10 +27,7 @@ export const adminNavigationGroups: readonly AdminNavGroup[] = [
   { label: "ホーム", items: [{ label: "ホーム", href: "/admin", icon: LayoutDashboard, availability: "implemented" }] },
   { label: "案件・運用", items: [
     { label: "案件", href: "/admin/projects", icon: BriefcaseBusiness, availability: "implemented" },
-    { label: "シフト", href: "/admin/shifts", icon: CalendarDays, availability: "implemented" },
-    { label: "配置・休憩回し", href: "/admin/placement", icon: Users, availability: "implemented" },
-    { label: "前日確認", href: "/admin/pre-shift", icon: ClipboardClock, availability: "implemented" },
-    { label: "当日運用", href: "/admin/day-of", icon: ClipboardClock, availability: "implemented" },
+    { label: "シフト運用", href: "/admin/shifts", icon: CalendarDays, availability: "implemented" },
   ] },
   { label: "勤怠・スタッフ", items: [
     { label: "勤怠", href: "/admin/attendance", icon: ClipboardClock, availability: "implemented" },
@@ -39,7 +36,7 @@ export const adminNavigationGroups: readonly AdminNavGroup[] = [
   { label: "集計", items: [future("月次勤怠", ClipboardClock), future("交通費", ClipboardClock), future("締め・NEO", ClipboardClock)] },
   { label: "連絡", items: [{ label: "ヘルプリクエスト", href: "/admin/incidents", icon: MessageSquareWarning, availability: "implemented" }, { label: "お知らせ", href: "/admin/announcements", icon: Megaphone, availability: "implemented" }, future("通知", Users)] },
   { label: "ナレッジ", items: [future("FAQ", BriefcaseBusiness), future("マニュアル", BriefcaseBusiness), future("勤務ルール", BriefcaseBusiness)] },
-  { label: "マスタ", items: [{ label: "取引先", href: "/admin/clients", icon: Building2, availability: "implemented" }, { label: "勤務先", href: "/admin/workplaces", icon: Building2, availability: "implemented" }] },
+  { label: "マスタ", items: [{ label: "取引先", href: "/admin/clients", icon: Building2, availability: "implemented" }] },
   { label: "設定", items: [{ label: "設定", href: "/admin/settings", icon: Settings, availability: "placeholder" }, future("監査ログ", ClipboardClock)] },
 ];
 

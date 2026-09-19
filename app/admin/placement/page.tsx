@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { AdminPage } from "@/components/admin/admin-page";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { AdminWorkflowTabs } from "@/components/admin/admin-workflow-tabs";
 import { AdminEmptyState, AdminErrorState, AdminNotFoundState, adminStateActionClass } from "@/components/admin/admin-state";
 import { PlacementBoard, PlacementPagination, PlacementSummary } from "@/components/admin/placement/placement-board";
 import { PlacementDateNavigation, PlacementFilters } from "@/components/admin/placement/placement-filters";
 import { getPlacement } from "@/lib/admin/placement/get-placement";
 import { getPlacementPlan } from "@/lib/admin/placement/get-placement-plan";
 import { PlacementEditor } from "@/components/admin/placement/placement-editor";
+import { ShiftOperationContext } from "@/components/admin/shifts/shift-operation-context";
 import { filterPlacement, paginatePlacement, parsePlacementQuery, placementHref } from "@/lib/admin/placement/placement-rules";
 
 export default async function PlacementPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -26,6 +28,12 @@ export default async function PlacementPage({ searchParams }: { searchParams: Pr
   return (
     <AdminPage>
       <AdminPageHeader title="配置・休憩回し" description="シフトごとの必要人数と配置状況を確認・管理します。" />
+      {selectedShift ? <ShiftOperationContext context={{ id: selectedShift.id, projectId: selectedShift.projectId, projectName: selectedShift.projectName, jobName: selectedShift.jobName, workplaceName: selectedShift.workplaceName, startsAt: selectedShift.startsAt, endsAt: selectedShift.endsAt, status: selectedShift.status }} phase="placement" metrics={[
+        { label: "必要人数", value: selectedShift.requiredWorkers },
+        { label: "配置済み", value: selectedShift.assignedWorkers },
+        { label: "未配置", value: selectedShift.shortage },
+        { label: "応募", value: selectedShift.applicationCount },
+      ]} /> : <AdminWorkflowTabs />}
       <PlacementDateNavigation query={query} />
       {result.ok && <PlacementSummary shifts={filtered} />}
       <PlacementFilters query={query} projects={projects} />

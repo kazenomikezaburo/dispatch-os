@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, Plus, X } from "lucide-react";
 import { Drawer } from "@/components/admin/drawer";
@@ -12,15 +12,26 @@ import type { PlacementBreak, PlacementPlan, PlacementSegment } from "@/lib/admi
 
 const field = "min-h-11 w-full rounded-control border border-border-strong bg-surface px-3 text-sm focus-visible:outline-2 focus-visible:outline-focus-ring";
 const primary = "min-h-11 rounded-control bg-primary px-5 text-sm font-semibold text-primary-foreground disabled:bg-surface-muted focus-visible:outline-2 focus-visible:outline-focus-ring";
-const newId = () => crypto.randomUUID();
+const newId = () => {
+  if (typeof crypto.randomUUID === "function") return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+};
 
-export function PlacementEditor({ initial, closeHref, shiftLabel }: { initial: PlacementPlan; closeHref: string; shiftLabel: string }) {
+export function PlacementEditor({ initial, closeHref, shiftLabel, assignmentId = null, returnFocusId }: { initial: PlacementPlan; closeHref: string; shiftLabel: string; assignmentId?: string | null; returnFocusId?: string }) {
   const router = useRouter(); const [draft, setDraft] = useState(initial); const [baseline, setBaseline] = useState(JSON.stringify(initial));
   const [result, setResult] = useState<{ kind: "success" | "error" | "conflict"; message: string } | null>(null); const [pending, startTransition] = useTransition();
   const [picker, setPicker] = useState(false); const [search, setSearch] = useState(""); const idempotency = useRef(newId());
   const dirty = JSON.stringify(draft) !== baseline; const errors = useMemo(() => validatePlacementDraft(draft), [draft]);
   const activePositions = draft.positions.filter((p) => !p.retired).sort((a, b) => a.displayOrder - b.displayOrder);
-  const close = () => { if (!dirty || window.confirm("未保存の変更を破棄して閉じますか？")) router.push(closeHref, { scroll: false }); };
+  useEffect(() => {
+    if (!assignmentId) return;
+    document.getElementById(`placement-editor-assignment-${assignmentId}`)?.scrollIntoView({ block: "center" });
+  }, [assignmentId]);
+  const close = () => { if (!dirty || window.confirm("未保存の変更を破棄して閉じますか？")) { if (returnFocusId) window.sessionStorage.setItem("admin-placement-return-focus", returnFocusId); router.push(closeHref, { scroll: false }); } };
   const updateTime = (kind: "segments" | "breaks", id: string, key: "startAt" | "endAt", value: string) => setDraft((old) => ({ ...old, [kind]: old[kind].map((row) => row.id === id ? { ...row, [key]: resolveShiftTime(value, old) ?? row[key] } : row) }));
   const save = () => startTransition(async () => {
     setResult(null); const checked = validatePlacementDraft(draft); if (checked.length) { setResult({ kind: "error", message: checked[0] }); return; }
@@ -41,7 +52,7 @@ export function PlacementEditor({ initial, closeHref, shiftLabel }: { initial: P
       <PlacementTimeline plan={draft} />
       <section aria-labelledby="staff-heading"><div className="flex flex-wrap items-center justify-between gap-3"><div><h3 id="staff-heading" className="font-semibold">スタッフ配置</h3><p className="text-xs text-foreground-muted">このシフトにAssignment済みのスタッフから選択します</p></div><button type="button" disabled={!activePositions.length} onClick={()=>setPicker(true)} className={adminStateActionClass}><Plus aria-hidden className="mr-1 size-4" />配置スタッフを選択</button></div>
         {picker && <div role="dialog" aria-modal="true" aria-labelledby="picker-title" className="mt-3 rounded-card border-2 border-primary bg-surface p-3"><div className="flex justify-between"><div><h4 id="picker-title" className="font-semibold">配置スタッフを選択</h4><p className="mt-1 text-xs text-foreground-muted">新しいAssignmentは作成しません。</p></div><button type="button" onClick={()=>setPicker(false)} aria-label="スタッフ選択を閉じる" className="size-11 rounded-control hover:bg-surface-hover"><X className="mx-auto size-4" /></button></div><label className="mt-3 block text-xs font-medium">スタッフを検索<input autoFocus type="search" value={search} onChange={(e)=>setSearch(e.target.value)} placeholder="氏名・スタッフIDで検索" className={`${field} mt-1`} /></label><ul className="mt-2 max-h-60 overflow-y-auto divide-y divide-border">{candidates.map((a)=><li key={a.assignmentId} className="flex min-h-14 items-center justify-between gap-3 py-2"><div className="min-w-0"><p className="truncate text-sm font-medium">{a.worker?.name ?? "スタッフ情報を表示できません"}</p><p className="truncate text-xs text-foreground-muted">{a.worker?.staffCode}・{a.status}{draft.segments.some(s=>s.assignmentId===a.assignmentId)&&"・配置あり"}</p></div><button type="button" onClick={()=>addSegment(a.assignmentId)} className={`${adminStateActionClass} shrink-0`}>時間帯を追加</button></li>)}</ul>{candidates.length === 0 && <p className="py-4 text-center text-sm text-foreground-muted">一致するスタッフはいません。</p>}</div>}
-        <ul className="mt-3 space-y-4">{draft.assignments.map((a)=><li key={a.assignmentId} className="rounded-panel border border-border p-4"><div className="flex flex-wrap justify-between gap-2"><div>{a.worker?<Link href={`/admin/workers/${a.worker.id}`} className="inline-flex min-h-11 items-center font-semibold text-link hover:underline">{a.worker.name}</Link>:<p className="font-semibold">スタッフ情報を表示できません</p>}<p className="text-xs text-foreground-muted">{a.worker?.staffCode}・{a.status}</p></div><p className="text-xs text-foreground-muted">配置 {plannedMinutes(draft.segments.filter(s=>s.assignmentId===a.assignmentId))}分 / 休憩 {plannedMinutes(draft.breaks.filter(b=>b.assignmentId===a.assignmentId))}分</p></div>
+        <ul className="mt-3 space-y-4">{draft.assignments.map((a)=><li id={`placement-editor-assignment-${a.assignmentId}`} key={a.assignmentId} className={`rounded-panel border p-4 ${assignmentId === a.assignmentId ? "border-primary ring-2 ring-primary/20" : "border-border"}`}><div className="flex flex-wrap justify-between gap-2"><div>{a.worker?<Link href={`/admin/workers/${a.worker.id}`} className="inline-flex min-h-11 items-center font-semibold text-link hover:underline">{a.worker.name}</Link>:<p className="font-semibold">スタッフ情報を表示できません</p>}<p className="text-xs text-foreground-muted">{a.worker?.staffCode}・{a.status}</p></div><p className="text-xs text-foreground-muted">配置 {plannedMinutes(draft.segments.filter(s=>s.assignmentId===a.assignmentId))}分 / 休憩 {plannedMinutes(draft.breaks.filter(b=>b.assignmentId===a.assignmentId))}分</p></div>
           <IntervalList kind="segments" rows={draft.segments.filter(s=>s.assignmentId===a.assignmentId)} positions={activePositions} onTime={updateTime} onPosition={(id,value)=>setDraft(old=>({...old,segments:old.segments.map(s=>s.id===id?{...s,positionId:value}:s)}))} onRemove={(id)=>setDraft(old=>({...old,segments:old.segments.filter(s=>s.id!==id)}))} />
           <div className="mt-3 flex items-center justify-between"><h5 className="text-sm font-semibold">休憩</h5><button type="button" onClick={()=>setDraft(old=>({...old,breaks:[...old.breaks,{id:newId(),assignmentId:a.assignmentId,startAt:old.startsAt,endAt:old.endsAt}]}))} className="min-h-11 text-sm font-medium text-link">＋ 休憩を追加</button></div><IntervalList kind="breaks" rows={draft.breaks.filter(b=>b.assignmentId===a.assignmentId)} positions={activePositions} onTime={updateTime} onRemove={(id)=>setDraft(old=>({...old,breaks:old.breaks.filter(b=>b.id!==id)}))} />
           {draft.breakMinutes != null && <BreakTarget planned={plannedMinutes(draft.breaks.filter(b=>b.assignmentId===a.assignmentId))} target={draft.breakMinutes} />}

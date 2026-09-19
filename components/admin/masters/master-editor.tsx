@@ -5,6 +5,7 @@ import { Plus, Pencil, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { saveClient } from "@/app/actions/clients";
 import { saveWorkplace } from "@/app/actions/workplaces";
+import { updateProjectContextWorkplace } from "@/app/actions/project-workplaces";
 import {
   AdminFeedback,
   AdminForbiddenState,
@@ -23,9 +24,11 @@ type Props = {
   kind: "client" | "workplace";
   branches: BranchOption[];
   item?: ClientItem | WorkplaceItem;
+  projectContext?: { projectId: string; jobId: string; jobName: string };
+  triggerLabel?: string;
 };
 
-export function MasterEditor({ kind, branches, item }: Props) {
+export function MasterEditor({ kind, branches, item, projectContext, triggerLabel }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
@@ -62,7 +65,7 @@ export function MasterEditor({ kind, branches, item }: Props) {
           accessNote: String(formData.get("accessNote") ?? ""),
           meetingNote: String(formData.get("meetingNote") ?? ""),
         };
-    const saved = await (isClient ? saveClient(payload) : saveWorkplace(payload));
+    const saved = await (isClient ? saveClient(payload) : projectContext && item ? updateProjectContextWorkplace({ ...payload, projectId: projectContext.projectId, jobId: projectContext.jobId }) : saveWorkplace(payload));
     setPending(false);
     if (saved.ok) {
       setOpen(false);
@@ -87,7 +90,7 @@ export function MasterEditor({ kind, branches, item }: Props) {
         }
       >
         {item ? <Pencil aria-hidden className="size-4" /> : <Plus aria-hidden className="size-4" />}
-        {item ? "編集" : `${title}を追加`}
+        {triggerLabel ?? (item ? "編集" : `${title}を追加`)}
       </button>
       <Drawer open={open} titleId={titleId} closeDisabled={pending} onClose={close}>
         <header className="sticky top-0 z-10 flex items-start justify-between border-b border-border bg-surface p-4 sm:p-6">
@@ -96,6 +99,7 @@ export function MasterEditor({ kind, branches, item }: Props) {
               {title}を{item ? "編集" : "追加"}
             </h2>
             <p className="mt-1 text-sm text-foreground-muted">一覧を離れずに保存します。</p>
+            {projectContext && workplace && <p className="mt-3 max-w-xl rounded-control border border-warning/30 bg-warning-subtle px-3 py-2 text-sm text-warning-foreground">この勤務先・会場は共有マスタです。変更は利用中の全業務に反映されます（現在 {workplace.jobCount} 業務で利用）。この案件では「{projectContext.jobName}」の文脈として履歴に記録します。</p>}
           </div>
           <button
             autoFocus
@@ -103,7 +107,7 @@ export function MasterEditor({ kind, branches, item }: Props) {
             disabled={pending}
             onClick={close}
             aria-label={`${title}編集を閉じる`}
-            className="inline-flex size-11 items-center justify-center rounded-control hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-focus-ring"
+            className="inline-flex size-11 shrink-0 items-center justify-center rounded-control hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-focus-ring"
           >
             <X aria-hidden className="size-5" />
           </button>

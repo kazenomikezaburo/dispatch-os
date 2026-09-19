@@ -44,7 +44,7 @@ export type AdminShiftDetail = {
     recruitmentNotes: string | null;
     manualUrl: string | null;
   };
-  workplace: { id: string; name: string };
+  workplace: { id: string; name: string; address: string };
   applicationCount: number;
   assignedWorkers: number;
   shortage: number;

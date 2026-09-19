@@ -1,12 +1,11 @@
 import type { PreShiftConfirmationState } from "@/lib/admin/shifts/pre-shift-confirmation-types";
+import { AdminStatusBadge, type AdminVisualTone } from "@/components/admin/admin-visual-primitives";
 
-const values: Record<PreShiftConfirmationState, { label: string; className: string }> = {
-  not_open: { label: "受付前", className: "bg-slate-100 text-slate-700" },
-  pending: { label: "未確認", className: "bg-amber-50 text-amber-800" },
-  confirmed: { label: "確認済み", className: "bg-emerald-50 text-emerald-800" },
+const values: Record<PreShiftConfirmationState, { label: string; tone: AdminVisualTone }> = {
+  not_open: { label: "受付前", tone: "neutral" }, pending: { label: "未確認", tone: "warning" }, confirmed: { label: "確認済み", tone: "success" },
 };
 
 export function PreShiftConfirmationStatusBadge({ state }: { state: PreShiftConfirmationState }) {
   const value = values[state];
-  return <span className={`inline-flex rounded px-2.5 py-1 text-xs font-semibold ${value.className}`}>{value.label}</span>;
+  return <AdminStatusBadge tone={value.tone}>{value.label}</AdminStatusBadge>;
 }

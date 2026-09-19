@@ -31,7 +31,7 @@ type ShiftRow = {
     recruitment_notes: string | null;
     manual_url: string | null;
     projects: { id: string; name: string };
-    workplaces: { id: string; name: string };
+    workplaces: { id: string; name: string; address: string };
   };
 };
 
@@ -72,7 +72,7 @@ export async function getShiftDetail(shiftId: string): Promise<ShiftDetailResult
           id, name, description, hourly_wage, transportation_fee_cap,
           dress_code, requirements, meal_notes, recruitment_notes, manual_url,
           projects!inner (id, name),
-          workplaces!inner (id, name)
+          workplaces!inner (id, name, address)
         )
       `)
       .eq("id", shiftId)
@@ -135,7 +135,7 @@ export async function getShiftDetail(shiftId: string): Promise<ShiftDetailResult
           recruitmentNotes: row.jobs.recruitment_notes,
           manualUrl: row.jobs.manual_url,
         },
-        workplace: { id: row.jobs.workplaces.id, name: row.jobs.workplaces.name },
+        workplace: { id: row.jobs.workplaces.id, name: row.jobs.workplaces.name, address: row.jobs.workplaces.address },
       },
       applications.map((item) => ({ id: item.id, workerId: item.worker_id, workerName: item.workers.display_name, status: item.status as ApplicationStatus, appliedAt: item.applied_at })),
       assignmentItems,

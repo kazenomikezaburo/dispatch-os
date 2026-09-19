@@ -11,7 +11,7 @@ import { getTokyoDate, parseAttendanceQuery } from "@/lib/admin/attendance/atten
 export default async function AttendancePage({ searchParams }: PageProps<"/admin/attendance">) {
   const query = parseAttendanceQuery(await searchParams);
   const result = await getAttendance(query);
-  const filtered = query.state !== "all" || query.confirmation !== "all" || query.attention !== "all" || query.q !== "";
+  const filtered = query.shift !== "" || query.state !== "all" || query.confirmation !== "all" || query.attention !== "all" || query.q !== "";
   return (
     <AdminPage>
       <AdminPageHeader title="勤怠" description="スタッフの勤務実績と確認状態を管理します。" />
