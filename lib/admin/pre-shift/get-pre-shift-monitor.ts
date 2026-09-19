@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { readAllPages } from "@/lib/admin/shifts/read-all-pages";
 import { preShiftRange, type PreShiftItem } from "./pre-shift-rules";
 
-type Row = { id:string; status:string; worker_id:string; workers:{display_name:string}; shift_slots:{id:string;starts_at:string;ends_at:string;jobs:{id:string;name:string;projects:{id:string;name:string};workplaces:{id:string;name:string}}}; pre_shift_confirmations:{can_work:boolean;health_status:"good"|"concern"|"unwell";planned_wake_at:string|null;planned_departure_at:string|null;comment:string|null;submitted_at:string;updated_at:string}[] };
+type Row = { id:string; status:string; worker_id:string; workers:{display_name:string}; shift_slots:{id:string;starts_at:string;ends_at:string;jobs:{id:string;name:string;projects:{id:string;name:string};workplaces:{id:string;name:string}}}; pre_shift_confirmations:{can_work:boolean;health_status:"good"|"concern"|"unwell";planned_wake_at:string|null;planned_departure_at:string|null;comment:string|null;submitted_at:string;updated_at:string}[] | null };
 export async function getPreShiftMonitor(date: string, exactShiftId?: string): Promise<{ok:true;items:PreShiftItem[]}|{ok:false}> {
   try {
     const supabase = await createClient(); const range = preShiftRange(date);
@@ -13,6 +13,6 @@ export async function getPreShiftMonitor(date: string, exactShiftId?: string): P
       const result = await request.order("id").range(from,to);
       return result as unknown as { data: Row[] | null; error: unknown; count: number | null };
     });
-    return { ok:true, items: rows.map((row) => { const c=row.pre_shift_confirmations[0]; return { assignmentId:row.id,assignmentStatus:row.status,workerId:row.worker_id,workerName:row.workers.display_name,shiftId:row.shift_slots.id,startsAt:row.shift_slots.starts_at,endsAt:row.shift_slots.ends_at,projectId:row.shift_slots.jobs.projects.id,projectName:row.shift_slots.jobs.projects.name,jobId:row.shift_slots.jobs.id,jobName:row.shift_slots.jobs.name,workplaceId:row.shift_slots.jobs.workplaces.id,workplaceName:row.shift_slots.jobs.workplaces.name,confirmation:c?{canWork:c.can_work,healthStatus:c.health_status,plannedWakeAt:c.planned_wake_at,plannedDepartureAt:c.planned_departure_at,comment:c.comment,submittedAt:c.submitted_at,updatedAt:c.updated_at}:null }; }) };
+    return { ok:true, items: rows.map((row) => { const c=row.pre_shift_confirmations?.[0]; return { assignmentId:row.id,assignmentStatus:row.status,workerId:row.worker_id,workerName:row.workers.display_name,shiftId:row.shift_slots.id,startsAt:row.shift_slots.starts_at,endsAt:row.shift_slots.ends_at,projectId:row.shift_slots.jobs.projects.id,projectName:row.shift_slots.jobs.projects.name,jobId:row.shift_slots.jobs.id,jobName:row.shift_slots.jobs.name,workplaceId:row.shift_slots.jobs.workplaces.id,workplaceName:row.shift_slots.jobs.workplaces.name,confirmation:c?{canWork:c.can_work,healthStatus:c.health_status,plannedWakeAt:c.planned_wake_at,plannedDepartureAt:c.planned_departure_at,comment:c.comment,submittedAt:c.submitted_at,updatedAt:c.updated_at}:null }; }) };
   } catch (error) { console.error("Failed to load admin pre-shift monitor", error); return {ok:false}; }
 }

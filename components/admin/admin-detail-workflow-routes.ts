@@ -25,29 +25,14 @@ export function shiftDetailHref(shiftId: string, tab: ShiftDetailTab = "overview
   return tab === "overview" ? base : `${base}?tab=${tab}`;
 }
 
-function contextHref(pathname: string, values: Record<string, string>) {
-  const params = new URLSearchParams(values);
-  return `${pathname}?${params.toString()}`;
-}
-
-export function projectWorkflowHrefs(projectId: string) {
-  return {
-    project: projectDetailHref(projectId),
-    shifts: projectDetailHref(projectId, "shifts"),
-    placement: contextHref("/admin/placement", { project: projectId }),
-    preShift: contextHref("/admin/pre-shift", { project: projectId }),
-    dayOf: contextHref("/admin/day-of", { project: projectId }),
-  };
-}
-
 export function shiftWorkflowHrefs(input: { projectId: string; shiftId: string; date: string }) {
   return {
     project: projectDetailHref(input.projectId),
     shift: shiftDetailHref(input.shiftId),
-    placement: contextHref("/admin/placement", { date: input.date, shift: input.shiftId }),
-    preShift: contextHref("/admin/pre-shift", { date: input.date, shift: input.shiftId }),
-    dayOf: contextHref("/admin/day-of", { date: input.date, shift: input.shiftId }),
-    attendance: contextHref("/admin/attendance", { date: input.date, shift: input.shiftId }),
+    placement: shiftDetailHref(input.shiftId, "placement"),
+    preShift: `/admin/shifts/${encodeURIComponent(input.shiftId)}?tab=confirmation&phase=pre`,
+    dayOf: `/admin/shifts/${encodeURIComponent(input.shiftId)}?tab=confirmation&phase=day`,
+    attendance: `/admin/attendance?${new URLSearchParams({ date: input.date, shift: input.shiftId }).toString()}`,
   };
 }
 

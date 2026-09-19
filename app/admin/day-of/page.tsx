@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AdminEmptyState, AdminErrorState, AdminNotFoundState, adminStateActionClass } from "@/components/admin/admin-state";
 import { AdminPage } from "@/components/admin/admin-page";
 import { AdminPageHeader } from "@/components/admin/admin-page-header";
@@ -14,7 +15,8 @@ import { ShiftOperationsNav } from "@/components/admin/shifts/shift-operations-n
 const control = "mt-1.5 min-h-11 w-full rounded-control border border-border-strong bg-surface px-3 text-sm focus-visible:outline-2 focus-visible:outline-focus-ring";
 
 export default async function DayOfPage(props: PageProps<"/admin/day-of">) {
-  return <DayOfScreen searchParams={props.searchParams} basePath="/admin/day-of" />;
+  const query = parseDayOfQuery(await props.searchParams);
+  redirect(dayOfHref(query, {}, "/admin/shifts/day-of"));
 }
 
 export async function DayOfScreen({ searchParams, basePath }: { searchParams: Promise<Record<string, string | string[] | undefined>>; basePath: string }) {

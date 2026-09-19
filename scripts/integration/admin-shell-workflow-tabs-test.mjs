@@ -8,14 +8,14 @@ const expected = [
   ["案件", "/admin/projects"],
   ["シフト", "/admin/shifts"],
   ["配置・休憩", "/admin/placement"],
-  ["前日確認", "/admin/pre-shift"],
-  ["当日運用", "/admin/day-of"],
+  ["前日確認", "/admin/shifts/pre-shift"],
+  ["当日運用", "/admin/shifts/day-of"],
 ];
 
 assert.deepEqual(
   adminWorkflowTabs.map(({ label, href }) => [label, href]),
   expected,
-  "Workflow tabs must retain the five canonical routes in workflow order.",
+  "Workflow tabs must retain the five current workflow routes in workflow order.",
 );
 
 for (const [, href] of expected) {

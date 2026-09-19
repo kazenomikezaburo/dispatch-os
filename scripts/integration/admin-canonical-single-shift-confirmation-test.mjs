@@ -37,6 +37,8 @@ match(page, /getPreShiftMonitor\(shiftDate, detail\.id\)/, "exact pre loader cal
 match(page, /getDayOf\(dayQuery, new Date\(\), detail\.id\)/, "exact day loader call");
 match(preLoader, /exactShiftId/, "pre exact shift parameter");
 match(preLoader, /\.eq\("shift_slot_id", exactShiftId\)/, "pre DB exact shift predicate");
+match(preLoader, /pre_shift_confirmations:\{[^}]+\}\[\] \| null/, "nullable confirmation relation is represented in the read shape");
+match(preLoader, /row\.pre_shift_confirmations\?\.\[0\]/, "missing confirmation relation is read null-safely");
 match(dayLoader, /exactShiftId/, "day exact shift parameter");
 match(dayLoader, /\.eq\("shift_slot_id",exactShiftId\)/, "day DB exact shift predicate");
 noMatch(page, /items\[0\]|assignments\[0\]/, "no first item fallback");
@@ -64,6 +66,6 @@ match(rules, /tokyoDate\(now\) < tokyoDate\(shiftStartsAt\)/, "Tokyo calendar co
 match(routes, /"overview" \| "applications" \| "placement" \| "confirmation"/, "four-tab contract unchanged");
 noMatch(page + rules + phaseNav, /@\/components\/worker|\/worker\//, "no Worker coupling");
 noMatch(page + rules, /supabase\.from|\.rpc\(/, "page and phase rules add no DB writes");
-check(checks >= 44, "focused suite has at least 44 checks");
+check(checks >= 46, "focused suite has at least 46 checks");
 
 console.log(`Admin canonical Single-Shift Confirmation: PASS (${checks} assertions)`);

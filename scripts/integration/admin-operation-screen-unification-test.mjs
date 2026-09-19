@@ -9,9 +9,9 @@ for (const active of ["shift", "placement", "pre-shift", "day-of"]) {
   assert.equal(items.filter((item) => item.current).length, 1);
   assert.equal(items.find((item) => item.current)?.key, active);
   assert.equal(items[0].href, "/admin/shifts/shift%20id");
-  assert.match(items[1].href, /date=2099-01-15&shift=shift\+id$/);
-  assert.match(items[2].href, /date=2099-01-15&shift=shift\+id$/);
-  assert.match(items[3].href, /date=2099-01-15&shift=shift\+id$/);
+  assert.equal(items[1].href, "/admin/shifts/shift%20id?tab=placement");
+  assert.equal(items[2].href, "/admin/shifts/shift%20id?tab=confirmation&phase=pre");
+  assert.equal(items[3].href, "/admin/shifts/shift%20id?tab=confirmation&phase=day");
 }
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), "utf8");
