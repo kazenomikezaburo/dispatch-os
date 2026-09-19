@@ -18,7 +18,7 @@ export function JobEditDrawer({ job, options }: { job: ProjectDetailJob; options
   const close = useCallback(() => { if (!pending) setOpen(false); }, [pending]);
   const reloadLatest = useCallback(() => { if (pending) return; setOpen(false); setFormKey((value) => value + 1); router.refresh(); }, [pending, router]);
   const complete = useCallback(() => { setSaved(true); setPending(false); setOpen(false); setFormKey((value) => value + 1); router.refresh(); }, [router]);
-  const editOptions = options.workplaces.some((workplace) => workplace.id === job.workplace.id) ? options : { ...options, workplaces: [job.workplace, ...options.workplaces] };
+  const editOptions = options;
 
   return <>
     <button type="button" onClick={() => { setSaved(false); setOpen(true); }} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control border border-border-strong bg-surface px-3 text-sm font-medium text-secondary-foreground hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"><Pencil aria-hidden="true" className="size-4" />編集</button>

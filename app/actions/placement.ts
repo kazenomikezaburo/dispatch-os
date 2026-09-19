@@ -26,6 +26,8 @@ export async function savePlacementPlan(input: PlacementSaveInput): Promise<Plac
     if (result.error) { const code = Object.keys(messages).find((key) => result.error!.message.includes(key)) ?? "INVALID_INPUT"; const type = code === "FORBIDDEN" ? "forbidden" : code === "NOT_FOUND" ? "notFound" : "validation"; return { ok: false, type, code, message: messages[code] }; }
     const data = result.data as { ok: boolean; code?: string; version?: number; current_version?: number; warnings?: unknown[]; replayed?: boolean };
     if (!data.ok) { const code = data.code ?? "INVALID_INPUT"; return { ok: false, type: code === "VERSION_CONFLICT" ? "conflict" : "validation", code, message: messages[code] ?? messages.INVALID_INPUT, currentVersion: data.current_version }; }
-    revalidatePath("/admin/placement"); return { ok: true, version: data.version!, warnings: data.warnings ?? [], replayed: Boolean(data.replayed) };
+    revalidatePath("/admin/placement");
+    revalidatePath(`/admin/shifts/${d.shiftId}`);
+    return { ok: true, version: data.version!, warnings: data.warnings ?? [], replayed: Boolean(data.replayed) };
   } catch { console.error("Failed to save placement plan"); return { ok: false, type: "error", message: "配置を保存できませんでした。時間をおいて再度お試しください。" }; }
 }

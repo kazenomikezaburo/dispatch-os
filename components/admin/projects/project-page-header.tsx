@@ -6,8 +6,8 @@ export function ProjectPageHeader() {
   return (
     <AdminPageHeader
       title="案件一覧"
-      description="募集中・進行中の案件と配置状況をまとめて管理します。"
-      actions={<Link href="/admin/projects/new" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-blue-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"><Plus aria-hidden="true" className="size-4" />新規案件</Link>}
+      description="案件を探し、取引先・期間・業務・シフトの状況をまとめて管理します。"
+      actions={<Link href="/admin/projects/new" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring"><Plus aria-hidden="true" className="size-4" />新規案件</Link>}
     />
   );
 }

@@ -28,6 +28,8 @@ type JobRow = {
   shift_slots: { id: string; required_workers: number }[];
 };
 
+const ASSIGNMENT_SHIFT_ID_BATCH_SIZE = 100;
+
 export async function getProjects(filters: ProjectQuery): Promise<ProjectsResult> {
   try {
     const supabase = await createClient();
@@ -106,12 +108,20 @@ export async function getProjects(filters: ProjectQuery): Promise<ProjectsResult
       return { ok: true, projects: buildProjectList(projects, jobs, []) };
     }
 
-    const { data: assignmentData, error: assignmentError } = await supabase
-      .from("assignments")
-      .select("shift_slot_id")
-      .in("shift_slot_id", shiftIds)
-      .in("status", ["assigned", "confirmed", "completed"]);
+    const assignmentQueries = [];
+    for (let index = 0; index < shiftIds.length; index += ASSIGNMENT_SHIFT_ID_BATCH_SIZE) {
+      assignmentQueries.push(
+        supabase
+          .from("assignments")
+          .select("shift_slot_id")
+          .in("shift_slot_id", shiftIds.slice(index, index + ASSIGNMENT_SHIFT_ID_BATCH_SIZE))
+          .in("status", ["assigned", "confirmed", "completed"]),
+      );
+    }
+    const assignmentResults = await Promise.all(assignmentQueries);
+    const assignmentError = assignmentResults.find((result) => result.error)?.error;
     if (assignmentError) throw assignmentError;
+    const assignmentData = assignmentResults.flatMap((result) => result.data ?? []);
 
     return {
       ok: true,

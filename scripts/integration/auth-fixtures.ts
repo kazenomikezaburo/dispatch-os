@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { execFileSync } from "node:child_process";
-// @ts-ignore Node's native TypeScript loader requires the explicit .ts suffix.
+// @ts-expect-error Node's native TypeScript loader requires the explicit .ts suffix.
 import { ACTORS, TEST_PASSWORD } from "./test-data.ts";
 
 export type ActorName = "anon" | keyof typeof ACTORS;

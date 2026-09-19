@@ -1,4 +1,5 @@
 import type { ProjectListItem } from "@/lib/admin/projects/project-types";
+import { AdminKpiCard, type AdminVisualTone } from "@/components/admin/admin-visual-primitives";
 
 function getTokyoWeekRange(now = new Date()) {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -25,27 +26,27 @@ export function ProjectSummary({ projects }: { projects: ProjectListItem[] }) {
     {
       label: "進行中",
       value: projects.filter((project) => project.status === "in_progress").length,
-      accent: "text-blue-700",
+      tone: "info",
+      description: "現在稼働している案件",
     },
     {
       label: "要確認",
       value: projects.filter((project) => project.shortage > 0).length,
-      accent: "text-amber-700",
+      tone: "warning",
+      description: "配置不足がある案件",
     },
     {
       label: "今週開始",
       value: projects.filter((project) => project.startDate >= week.start && project.startDate < week.end).length,
-      accent: "text-emerald-700",
+      tone: "success",
+      description: "今週開始する案件",
     },
   ];
 
   return (
     <section aria-label="案件サマリー" className="grid gap-3 sm:grid-cols-3">
       {items.map((item) => (
-        <article key={item.label} className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-          <p className="text-xs font-semibold text-slate-500">{item.label}</p>
-          <p className={`mt-2 text-2xl font-semibold tracking-tight ${item.accent}`}>{item.value}<span className="ml-1 text-sm font-medium text-slate-500">件</span></p>
-        </article>
+        <AdminKpiCard key={item.label} label={item.label} value={item.value} unit="件" description={item.description} tone={item.tone as AdminVisualTone} />
       ))}
     </section>
   );

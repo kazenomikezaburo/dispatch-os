@@ -1,5 +1,5 @@
 import { AdminPage } from "@/components/admin/admin-page";
-import { AdminSectionNav } from "@/components/admin/admin-section-nav";
+import { AdminBreadcrumb } from "@/components/admin/admin-breadcrumb";
 import Link from "next/link";
 import { AdminEmptyState, AdminErrorState, adminStateActionClass } from "@/components/admin/admin-state";
 import { ShiftEmptyState } from "@/components/admin/shifts/shift-empty-state";
@@ -12,6 +12,7 @@ import { parseShiftView, shiftViewHref, shiftViewRange, tokyoDate } from "@/lib/
 import { ShiftSummary } from "@/components/admin/shifts/shift-summary";
 import { ShiftViewControls } from "@/components/admin/shifts/shift-view-controls";
 import { ShiftScheduleViews } from "@/components/admin/shifts/shift-schedule-views";
+import { ShiftOperationsNav } from "@/components/admin/shifts/shift-operations-nav";
 
 export default async function ShiftsPage({ searchParams }: PageProps<"/admin/shifts">) {
   const raw = await searchParams;
@@ -23,8 +24,8 @@ export default async function ShiftsPage({ searchParams }: PageProps<"/admin/shi
   const summaryShifts = result.ok ? state.view === "calendar" ? result.shifts.filter((shift) => tokyoDate(shift.startsAt).startsWith(state.month)) : result.shifts : [];
   const scope = state.view === "calendar" ? `${state.month}（月外の日付を除く）` : state.view === "week" ? "表示中の7日間" : state.date || "一覧の対象期間";
 
-  return <AdminPage><ShiftPageHeader />
-    <AdminSectionNav label="案件・シフト" items={[{ label: "案件", href: "/admin/projects" }, { label: "シフト", href: "/admin/shifts", current: true }]} />
+  return <AdminPage><AdminBreadcrumb items={[{ label: "案件・運用", href: "/admin/projects" }, { label: "シフト運用" }]} /><ShiftPageHeader />
+    <ShiftOperationsNav />
     {result.ok && <ShiftSummary shifts={summaryShifts} scope={scope} />}
     <ShiftFilters query={query} state={state} />
     <ShiftViewControls query={query} state={state} />

@@ -25,6 +25,11 @@ type CurrentShift = {
 
 const notFoundMessage = "シフトが見つからないか、編集する権限がありません。";
 
+function sameInstant(left: string | null, right: string | null) {
+  if (left === null || right === null) return left === right;
+  return Date.parse(left) === Date.parse(right);
+}
+
 export async function updateShiftCore(input: ShiftUpdateInput, actor: EditActor): Promise<ShiftUpdateResult & { projectId?: string }> {
   try {
     void actor;
@@ -56,7 +61,7 @@ export async function updateShiftCore(input: ShiftUpdateInput, actor: EditActor)
       application_deadline: deadline,
       status: input.status,
     };
-    const unchanged = values.starts_at === row.starts_at && values.ends_at === row.ends_at && values.required_workers === row.required_workers && values.break_minutes === row.break_minutes && values.application_deadline === row.application_deadline && values.status === row.status;
+    const unchanged = sameInstant(values.starts_at, row.starts_at) && sameInstant(values.ends_at, row.ends_at) && values.required_workers === row.required_workers && values.break_minutes === row.break_minutes && sameInstant(values.application_deadline, row.application_deadline) && values.status === row.status;
     if (unchanged) return { ok: true, type: "no_change", id: row.id, updatedAt: row.updated_at, projectId: row.jobs.project_id };
     if (row.updated_at !== input.expectedUpdatedAt) return { ok: false, type: "conflict", message: editConflictMessage };
 
@@ -79,7 +84,7 @@ export async function updateShiftCore(input: ShiftUpdateInput, actor: EditActor)
     }
 
     const fieldErrors: Partial<Record<ShiftUpdateField, string>> = {};
-    const plannedTimeChanged = values.starts_at !== row.starts_at || values.ends_at !== row.ends_at;
+    const plannedTimeChanged = !sameInstant(values.starts_at, row.starts_at) || !sameInstant(values.ends_at, row.ends_at);
     if (plannedTimeChanged && (hasApplications || hasAssignments || hasAttendance || Date.now() >= new Date(row.starts_at).getTime())) {
       fieldErrors.start_date = "応募・配置・勤怠がある、または勤務開始済みのため予定時間を変更できません。";
       fieldErrors.end_date = fieldErrors.start_date;

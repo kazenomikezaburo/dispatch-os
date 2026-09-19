@@ -35,7 +35,7 @@ type JobFormProps = {
 export function JobForm({ options, mode = "create", initialValues, jobId, expectedUpdatedAt, canEditWorkplace = true, canEditCompensation = true, cancelHref, onCancel, submitLabel = mode === "edit" ? "変更を保存" : "業務を追加", pendingLabel = mode === "edit" ? "保存中..." : "業務を追加中...", submitAction = createJob, onSuccess, onPendingChange, onReloadLatest }: JobFormProps) {
   const [failureKind, setFailureKind] = useState<string>();
   const defaultStatus = options.project.status === "draft" ? "draft" : "recruiting";
-  const { register, handleSubmit, reset, setError, formState: { errors, isSubmitting, isDirty } } = useForm<JobFormValues, unknown, JobFormInput>({ resolver: zodResolver(jobFormSchema), defaultValues: { name: "", workplace_id: options.workplaces[0]?.id ?? "", status: defaultStatus, description: "", hourly_wage: "", transportation_fee_cap: "", dress_code: "", requirements: "", meal_notes: "", recruitment_notes: "", manual_url: "", ...initialValues } });
+  const { register, handleSubmit, reset, setError, formState: { errors, isSubmitting, isDirty } } = useForm<JobFormValues, unknown, JobFormInput>({ resolver: zodResolver(jobFormSchema), defaultValues: { name: "", workplace_id: "", status: defaultStatus, description: "", hourly_wage: "", transportation_fee_cap: "", dress_code: "", requirements: "", meal_notes: "", recruitment_notes: "", manual_url: "", ...initialValues } });
   useEffect(() => { onPendingChange?.(isSubmitting); }, [isSubmitting, onPendingChange]);
   const submit = handleSubmit(async (values) => {
     onPendingChange?.(true);
@@ -77,7 +77,7 @@ export function JobForm({ options, mode = "create", initialValues, jobId, expect
     <Field name="meal_notes" label="食事案内" error={message("meal_notes")}><textarea {...register("meal_notes")} rows={3} maxLength={2000} className={controlClass} /></Field>
     <Field name="recruitment_notes" label="募集補足" error={message("recruitment_notes")}><textarea {...register("recruitment_notes")} rows={3} maxLength={2000} className={controlClass} /></Field>
     <Field name="manual_url" label="業務資料URL" error={message("manual_url")}><input type="url" placeholder="https://..." {...register("manual_url")} aria-invalid={Boolean(errors.manual_url)} aria-describedby={errors.manual_url ? "manual_url-error" : undefined} className={controlClass} /></Field>
-    {disabled && <AdminFeedback kind="error" message="利用可能な勤務先がありません。勤務先マスタで有効な勤務先を登録してください。" />}
+    {disabled && <AdminFeedback kind="error" message="利用可能な勤務先・会場がありません。案件編集から新しい勤務先・会場を登録してください。" />}
     <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end"><CancelAction cancelHref={cancelHref} onCancel={onCancel} /><button type="submit" disabled={disabled || isSubmitting} className="min-h-11 rounded-control bg-primary px-5 text-sm font-medium text-primary-foreground hover:bg-primary-hover active:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-foreground-disabled">{isSubmitting ? pendingLabel : submitLabel}</button></div>
     </fieldset>
   </form>;

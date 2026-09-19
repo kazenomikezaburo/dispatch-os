@@ -1,10 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { unstable_rethrow } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { AdminFeedback, AdminForbiddenState, adminStateActionClass } from "@/components/admin/admin-state";
+import { AdminEditorFooter, AdminEditorSection } from "@/components/admin/editor/admin-editor-layout";
+import { PROJECT_EDITOR_SECTIONS } from "@/components/admin/editor/admin-editor-contract";
 import { useForm, useWatch } from "react-hook-form";
 import { createProject, updateProject } from "@/app/actions/projects";
 import { PROJECT_STATUS_LABELS } from "@/lib/admin/projects/project-rules";
@@ -80,30 +81,28 @@ export function ProjectForm({ options, mode = "create", initialValues, projectId
   });
   const error = (name: keyof ProjectFormInput) => errors[name]?.message;
 
-  return <form onSubmit={submit} noValidate className="space-y-5 rounded-panel border border-border bg-surface p-4 sm:p-6">
-    <fieldset disabled={isSubmitting} className="min-w-0 space-y-5">
+  return <form onSubmit={submit} noValidate className="space-y-6">
+    <fieldset disabled={isSubmitting} className="min-w-0 space-y-6">
     {errors.root?.message && failureKind === "conflict" ? <AdminFeedback kind="conflict" message={errors.root.message}>{onReloadLatest && <button type="button" onClick={onReloadLatest} className={adminStateActionClass}>最新の内容を読み込む</button>}</AdminFeedback> : failureKind === "forbidden" ? <AdminForbiddenState message={errors.root?.message} /> : <ProjectFormError message={errors.root?.message} />}
     {isSubmitting ? <AdminFeedback kind="pending" message="保存しています。この画面を閉じないでください。" /> : isDirty && <AdminFeedback kind="unsaved" message="未保存の変更があります。" />}
-    <p className="text-sm text-foreground-secondary">案件の基本情報・取引先・期間を管理します。勤務先・時給・服装は業務側で設定します。作成後の支店は変更できません。</p>
-    <Field label="案件名" required error={error("name")}><input {...register("name")} maxLength={100} aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? "案件名-error" : undefined} className={fieldClass} /></Field>
-    <div className="grid gap-5 sm:grid-cols-2">
-      <Field label="支店" required error={error("branch_id")}>{mode === "edit" ? <select value={defaultBranch} disabled aria-label="支店（変更不可）" className={fieldClass}>{options.branches.filter((branch) => branch.id === defaultBranch).map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}</select> : <select {...register("branch_id")} aria-invalid={Boolean(errors.branch_id)} aria-describedby={errors.branch_id ? "支店-error" : undefined} className={fieldClass}>{options.branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}</select>}</Field>
-      <Field label="取引先" required error={error("client_id")}><select {...register("client_id")} aria-invalid={Boolean(errors.client_id)} aria-describedby={errors.client_id ? "取引先-error" : undefined} className={fieldClass}><option value="">選択してください</option>{clients.map((client) => <option key={client.id} value={client.id}>{client.name}</option>)}</select></Field>
-    </div>
-    {options.clients.length === 0 && <p className="text-sm text-amber-800">利用可能な取引先がありません。先に取引先を登録してください。</p>}
-    <div className="grid gap-5 sm:grid-cols-2"><Field label="開始日" required error={error("start_date")}><input type="date" {...register("start_date")} aria-invalid={Boolean(errors.start_date)} aria-describedby={errors.start_date ? "開始日-error" : undefined} className={fieldClass} /></Field><Field label="終了日" required error={error("end_date")}><input type="date" {...register("end_date")} aria-invalid={Boolean(errors.end_date)} aria-describedby={errors.end_date ? "終了日-error" : undefined} className={fieldClass} /></Field></div>
-    <Field label="状態" required error={error("status")}><select {...register("status")} aria-invalid={Boolean(errors.status)} aria-describedby={errors.status ? "状態-error" : undefined} className={fieldClass}>{PROJECT_STATUSES.map((status) => <option key={status} value={status}>{PROJECT_STATUS_LABELS[status]}</option>)}</select></Field>
-    <Field label="説明" error={error("description")}><textarea {...register("description")} maxLength={2000} rows={5} aria-invalid={Boolean(errors.description)} aria-describedby={errors.description ? "説明-error" : undefined} className={fieldClass} /></Field>
-    <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end"><CancelAction cancelHref={cancelHref} onCancel={onCancel} /><button type="submit" disabled={disabled || isSubmitting} className="min-h-11 rounded-control bg-primary px-5 text-sm font-medium text-primary-foreground hover:bg-primary-hover active:bg-primary-active focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-foreground-disabled">{isSubmitting ? pendingLabel : submitLabel}</button></div>
+    <AdminEditorSection id="project-basic-title" title={PROJECT_EDITOR_SECTIONS[0]} description="案件そのものを識別する情報と管理範囲を設定します。">
+      <div className="space-y-5"><Field label="案件名" required error={error("name")}><input {...register("name")} maxLength={100} aria-invalid={Boolean(errors.name)} aria-describedby={errors.name ? "案件名-error" : undefined} className={fieldClass} /></Field>
+      <div className="grid gap-5 sm:grid-cols-2">
+        <Field label="支店" required error={error("branch_id")}><>{mode === "edit" ? <select value={defaultBranch} disabled aria-label="支店（変更不可）" className={fieldClass}>{options.branches.filter((branch) => branch.id === defaultBranch).map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}</select> : <select {...register("branch_id")} aria-invalid={Boolean(errors.branch_id)} aria-describedby={errors.branch_id ? "支店-error" : undefined} className={fieldClass}>{options.branches.map((branch) => <option key={branch.id} value={branch.id}>{branch.name}</option>)}</select>}{mode === "edit" && <span className="mt-1.5 block text-xs text-foreground-muted">案件作成後は支店を変更できません。</span>}</></Field>
+        <Field label="取引先" required error={error("client_id")}><select {...register("client_id")} aria-invalid={Boolean(errors.client_id)} aria-describedby={errors.client_id ? "取引先-error" : undefined} className={fieldClass}><option value="">選択してください</option>{clients.map((client) => <option key={client.id} value={client.id}>{client.name}</option>)}</select></Field>
+      </div>
+      {options.clients.length === 0 && <p className="text-sm text-amber-800">利用可能な取引先がありません。先に取引先を登録してください。</p>}
+      <Field label="状態" required error={error("status")}><select {...register("status")} aria-invalid={Boolean(errors.status)} aria-describedby={errors.status ? "状態-error" : undefined} className={fieldClass}>{PROJECT_STATUSES.map((status) => <option key={status} value={status}>{PROJECT_STATUS_LABELS[status]}</option>)}</select></Field></div>
+    </AdminEditorSection>
+    <AdminEditorSection id="project-period-title" title={PROJECT_EDITOR_SECTIONS[1]} description="案件の実施期間を設定します。">
+      <div className="grid gap-5 sm:grid-cols-2"><Field label="開始日" required error={error("start_date")}><input type="date" {...register("start_date")} aria-invalid={Boolean(errors.start_date)} aria-describedby={errors.start_date ? "開始日-error" : undefined} className={fieldClass} /></Field><Field label="終了日" required error={error("end_date")}><input type="date" {...register("end_date")} aria-invalid={Boolean(errors.end_date)} aria-describedby={errors.end_date ? "終了日-error" : undefined} className={fieldClass} /></Field></div>
+    </AdminEditorSection>
+    <AdminEditorSection id="project-description-title" title={PROJECT_EDITOR_SECTIONS[2]} description="案件全体で共有する説明を入力します。勤務条件は業務・シフト側で管理します。">
+      <Field label="説明" error={error("description")}><textarea {...register("description")} maxLength={2000} rows={5} aria-invalid={Boolean(errors.description)} aria-describedby={errors.description ? "説明-error" : undefined} className={fieldClass} /></Field>
+    </AdminEditorSection>
     </fieldset>
+    {cancelHref ? <AdminEditorFooter cancelHref={cancelHref} disabled={disabled} pending={isSubmitting} submitLabel={submitLabel} pendingLabel={pendingLabel} note="保存後は案件詳細へ戻ります。" /> : <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">{onCancel && <button type="button" onClick={onCancel} className="min-h-11 rounded-control border border-border-strong px-5 text-sm font-medium">キャンセル</button>}<button type="submit" disabled={disabled || isSubmitting} className="min-h-11 rounded-control bg-primary px-5 text-sm font-medium text-primary-foreground">{isSubmitting ? pendingLabel : submitLabel}</button></div>}
   </form>;
-}
-
-function CancelAction({ cancelHref, onCancel }: Pick<ProjectFormProps, "cancelHref" | "onCancel">) {
-  const className = "inline-flex min-h-11 items-center justify-center rounded-control border border-border-strong bg-surface px-5 text-sm font-medium text-secondary-foreground hover:bg-secondary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
-  if (onCancel) return <button type="button" onClick={onCancel} className={className}>キャンセル</button>;
-  if (cancelHref) return <Link href={cancelHref} className={className}>キャンセル</Link>;
-  return null;
 }
 
 function Field({ label, required, error, children }: { label: string; required?: boolean; error?: string; children: React.ReactNode }) {

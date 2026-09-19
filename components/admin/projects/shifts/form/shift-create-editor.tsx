@@ -6,6 +6,8 @@ import { useMemo, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { createBulkShifts } from "@/app/actions/shifts";
 import { Drawer } from "@/components/admin/drawer";
+import { AdminEditorSection } from "@/components/admin/editor/admin-editor-layout";
+import { SHIFT_EDITOR_SECTIONS } from "@/components/admin/editor/admin-editor-contract";
 import { AdminEmptyState, AdminFeedback, adminStateActionClass } from "@/components/admin/admin-state";
 import { bulkResolvedShiftSchema, bulkShiftFormSchema } from "@/lib/admin/projects/bulk-shift-form-schema";
 import { generateDates, normalizeOverride, resolveShiftConfig, type BulkShiftConfig, type BulkShiftOverrides } from "@/lib/admin/projects/bulk-shift-helpers";
@@ -91,13 +93,11 @@ export function ShiftCreateEditor({ options, initialDate }: { options: ShiftForm
     <div ref={errorRef} tabIndex={-1}>{error && <AdminFeedback kind="error" message={error} />}</div>
     <fieldset disabled={pending} className="min-w-0 space-y-6">
       <legend className="sr-only">シフト作成</legend>
-      <section className="rounded-panel border border-border bg-surface p-4 sm:p-6" aria-labelledby="create-context-title">
-        <h2 id="create-context-title" className="text-lg font-semibold">基本情報</h2>
-        <dl className="mt-4 grid gap-4 sm:grid-cols-3">{[["案件", options.project.name], ["勤務先", options.job.workplaceName], ["業務", options.job.name]].map(([label, value]) => <div key={label} className="min-w-0"><dt className="text-xs text-foreground-muted">{label}</dt><dd className="mt-1 break-words text-sm font-medium">{value}</dd></div>)}</dl>
+      <AdminEditorSection id="create-context-title" title={SHIFT_EDITOR_SECTIONS[0]} description="対象の案件・勤務先・業務です。">
+        <dl className="grid gap-4 sm:grid-cols-3">{[["案件", options.project.name], ["勤務先", options.job.workplaceName], ["業務", options.job.name]].map(([label, value]) => <div key={label} className="min-w-0"><dt className="text-xs text-foreground-muted">{label}</dt><dd className="mt-1 break-words text-sm font-medium">{value}</dd></div>)}</dl>
         <p className="mt-4 text-xs text-foreground-muted">案件・業務の文脈は固定です。別の業務に作成する場合は案件画面で選び直してください。</p>
-      </section>
-      <section className="rounded-panel border border-border bg-surface p-4 sm:p-6" aria-labelledby="create-dates-title">
-        <h2 id="create-dates-title" className="text-lg font-semibold">日程</h2><p className="mt-1 text-sm text-foreground-secondary">最初は1日分。必要な日付を追加し、例外の日だけ個別設定を変更できます。</p>
+      </AdminEditorSection>
+      <AdminEditorSection id="create-dates-title" title={SHIFT_EDITOR_SECTIONS[1]} description="最初は1日分。必要な日付を追加し、例外の日だけ個別設定を変更できます。">
         <div className="mt-4 flex flex-col items-stretch gap-2 sm:flex-row sm:items-end"><label className="grid min-w-0 flex-1 gap-1.5 text-sm font-medium">追加する日付<input type="date" value={manualDate} onChange={(e) => setManualDate(e.target.value)} className={shiftControlClass} /></label><button type="button" onClick={addDate} className={adminStateActionClass}>＋ 日付を追加</button></div>
         <details className="mt-4 rounded-control border border-border p-3"><summary className="cursor-pointer py-2 text-sm font-medium">期間・曜日から追加</summary>
           <div className="mt-3 grid gap-4 sm:grid-cols-2"><label className="grid gap-1.5 text-sm">期間の開始日<input type="date" value={rangeStart} onChange={(e) => setRangeStart(e.target.value)} className={shiftControlClass} /></label><label className="grid gap-1.5 text-sm">期間の終了日<input type="date" value={rangeEnd} onChange={(e) => setRangeEnd(e.target.value)} className={shiftControlClass} /></label></div>
@@ -109,13 +109,12 @@ export function ShiftCreateEditor({ options, initialDate }: { options: ShiftForm
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><button type="button" onClick={() => openOverride(row.date)} className="inline-flex min-h-11 items-center text-left text-sm font-semibold text-link underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-focus-ring">{dateLabel(row.date)}の設定</button><p className="text-sm text-foreground-secondary">{row.startTime}〜{row.endTime}{row.endsNextDay && "（翌日）"} / 必要{row.requiredWorkers}名</p></div><div className="flex flex-wrap items-center gap-2"><span className={`rounded-pill px-3 py-1 text-xs ${overrides[row.date] ? "bg-info-subtle text-link" : "bg-surface-muted text-foreground-secondary"}`}>{overrides[row.date] ? "個別設定あり" : "共通設定"}</span><button type="button" aria-label={`${dateLabel(row.date)}を除外`} onClick={() => { setDates((current) => current.filter((d) => d !== row.date)); resetOverride(row.date); }} className={adminStateActionClass}>除外</button></div></div>
           {errors[row.date] && <p role="alert" className="mt-2 text-sm text-danger">{errors[row.date]}</p>}
         </li>)}</ul>}
-      </section>
-      <section aria-labelledby="create-common-title" className="rounded-panel border border-border bg-surface p-4 sm:p-6"><h2 id="create-common-title" className="text-lg font-semibold">共通設定</h2><p className="mb-4 mt-1 text-sm text-foreground-secondary">個別に変更していない項目へ反映されます。個別設定済みの項目は保持します。</p><ShiftConfigFields value={base} onChange={(value) => { setBase(value); changed(); }} /></section>
-      <section ref={previewRef} tabIndex={-1} aria-labelledby="create-preview-title" className="rounded-panel border border-border bg-surface p-4 sm:p-6 focus:outline-none">
-        <h2 id="create-preview-title" className="text-lg font-semibold">作成内容の確認</h2><p className="mt-2 text-sm">{dates.length}件の独立したシフト / 個別設定 {Object.keys(overrides).length}日 / エラー {Object.keys(errors).length}日</p>
+      </AdminEditorSection>
+      <AdminEditorSection id="create-common-title" title={SHIFT_EDITOR_SECTIONS[2]} description="追加した日付へ共通設定として反映します。個別設定済みの項目は保持します。"><ShiftConfigFields value={base} onChange={(value) => { setBase(value); changed(); }} /></AdminEditorSection>
+      <section ref={previewRef} tabIndex={-1} className="focus:outline-none"><AdminEditorSection id="create-preview-title" title="作成内容の確認"><p className="text-sm">{dates.length}件の独立したシフト / 個別設定 {Object.keys(overrides).length}日 / エラー {Object.keys(errors).length}日</p>
         {preview ? <><ul className="mt-4 divide-y divide-border">{resolved.map((row) => <li key={row.date} className="flex flex-wrap gap-x-4 gap-y-2 py-3 text-sm"><span className="font-medium">{dateLabel(row.date)}</span><span>{row.startTime}〜{row.endTime}{row.endsNextDay && "（翌日）"}</span><span>必要{row.requiredWorkers}名 / 休憩{row.breakMinutes || "未設定"}{row.breakMinutes && "分"}</span><span>{overrides[row.date] ? "個別設定あり" : "共通設定"}</span></li>)}</ul><AdminFeedback kind="success" message="入力内容を確認しました。作成後は1件ずつ個別に編集できます。" /></> : <p className="mt-2 text-sm text-foreground-muted">プレビューを確認してから作成してください。設定変更後は再確認が必要です。</p>}
         <button type="button" onClick={review} className={`${adminStateActionClass} mt-4`}>プレビューを確認</button>
-      </section>
+      </AdminEditorSection></section>
     </fieldset>
     {pending && <AdminFeedback kind="pending" message="シフトを作成しています。この画面を閉じないでください。" />}
     <div className="sticky bottom-0 z-10 flex flex-col-reverse gap-3 border-t border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
