@@ -271,3 +271,33 @@ The mapping is ready for human visual review because every screenshot target is 
 
 - **AUDIT-3.0A-3: COMPLETE WITH MAPPING GAPS**
 - **AUDIT-3.0A-4: READY**
+
+## Canonical Admin Rebaseline — 2026-09-19
+
+`ADMIN-QA-3.0B-6I` rebaselines the post-6H canonical Admin IA. This is a QA classification update, not a request to implement surplus Figma concepts. The original screenshot rows above remain immutable historical evidence.
+
+| Canonical area | Current route family | Rebaseline classification | Notes |
+| --- | --- | --- | --- |
+| Project | `/admin/projects`, `/admin/projects/[projectId]` | implemented / aligned | Canonical Project tabs are Overview, Shifts, and History; the 6G project-scoped workplace flow is authoritative. |
+| Shift Operations | `/admin/shifts`, `/admin/shifts/pre-shift`, `/admin/shifts/day-of` | implemented / aligned | Cross-shift operation screens and active navigation are canonical. |
+| Shift Detail | `/admin/shifts/[shiftId]` | implemented / aligned | Overview, Applications, Placement, and Confirmation are the canonical detail tabs. |
+| Placement | `/admin/shifts/[shiftId]?tab=placement` and `/admin/placement` | implemented / minor difference | Single-shift placement is canonical detail context; date-wide placement remains compatibility. |
+| Confirmation | `/admin/shifts/[shiftId]?tab=confirmation&phase=pre|day` | implemented / aligned | Exact Shift and assignment context is retained; no Shift is inferred. |
+| Client Master | `/admin/clients` | implemented / aligned | Existing master list/drawer pattern remains the comparison baseline. |
+| Attendance | `/admin/attendance`, `/admin/attendance/[assignmentId]` | implemented / aligned | Revision dialog remains a supported domain state. |
+| Staff | `/admin/workers`, `/admin/workers/[workerId]` | implemented / aligned | Current implementation keeps the established list/detail/history split. |
+| Communication | `/admin/incidents`, `/admin/announcements` | implemented / minor difference | Production separates operational incidents from immutable announcements. |
+
+### Explicit future Figma features
+
+Attention Center, Action-first Home variants, Skill/Qualification Master, Client Portal, Knowledge, advanced Governance/Settings/Audit, broadcast creation, delivery history, monthly aggregation/expense/closing, and the unimplemented Shift week / Placement staff-picker states are future work, not current regressions.
+
+### Legacy compatibility baseline
+
+- `/admin/pre-shift` and `/admin/day-of` redirect to canonical cross-shift routes after query normalization.
+- Legacy nested Shift create URLs redirect only with their explicit, validated Project and Job IDs.
+- `/admin/placement` and `/admin/workplaces` remain compatibility surfaces because a canonical target cannot be derived without guessing context.
+
+### QA blocker
+
+The local Admin test account returned `invalid_credentials` on 2026-09-19. This prevented a fresh authenticated browser pass at 1440×900, 1280×900, and 390×844. It is an Auth-fixture/environment blocker, not a UI regression; no Auth mutation was made in this QA phase.

@@ -19,9 +19,7 @@ export function ShiftOperationsNav() {
         {shiftOperationTabs.map((item) => {
           const active = item.href === "/admin/shifts"
             ? pathname === item.href || pathname === "/admin/shifts/new"
-            : item.href === "/admin/shifts/pre-shift"
-              ? pathname === item.href || pathname === "/admin/pre-shift"
-              : pathname === item.href || pathname === "/admin/day-of";
+            : pathname === item.href;
           return (
             <Link
               key={item.href}

@@ -40,7 +40,7 @@ async function transitionAdminIncident(command: "acknowledge" | "resolve", input
         console.error(`Failed to project ${command} incident notification`, projectionError);
       }
     } else console.error(`Failed to project ${command} incident notification`, "Missing source event ID");
-    revalidatePath("/admin/incidents"); revalidatePath("/admin/day-of"); revalidatePath("/worker"); revalidatePath("/worker/notifications");
+    revalidatePath("/admin/incidents"); revalidatePath("/admin/shifts/day-of"); revalidatePath("/worker"); revalidatePath("/worker/notifications");
     return{ok:true};
   } catch(error:unknown){console.error(`Failed to ${command} operational incident`,error);return{ok:false,...adminIncidentError(undefined)};}
 }

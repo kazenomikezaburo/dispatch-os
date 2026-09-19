@@ -4,7 +4,7 @@ import { dayOfHref, parseDayOfQuery } from "../../lib/admin/day-of/day-of-rules.
 import { parsePreShiftQuery, preShiftHref } from "../../lib/admin/pre-shift/pre-shift-rules.ts";
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), "utf8");
-const [main, nav, header, create, choices, pre, preCanonical, preMonitor, day, dayCanonical, dayMonitor, sidebar, nestedCreate, shiftsAction] = await Promise.all([
+const [main, nav, header, create, choices, pre, preCanonical, preMonitor, day, dayCanonical, dayMonitor, sidebar, nestedCreate, bulkNestedCreate, shiftsAction] = await Promise.all([
   read("app/admin/shifts/page.tsx"),
   read("components/admin/shifts/shift-operations-nav.tsx"),
   read("components/admin/shifts/shift-page-header.tsx"),
@@ -18,6 +18,7 @@ const [main, nav, header, create, choices, pre, preCanonical, preMonitor, day, d
   read("components/admin/day-of/day-of-monitor.tsx"),
   read("components/admin/admin-nav.ts"),
   read("app/admin/projects/[projectId]/jobs/[jobId]/shifts/new/page.tsx"),
+  read("app/admin/projects/[projectId]/jobs/[jobId]/shifts/bulk-new/page.tsx"),
   read("app/actions/shifts.ts"),
 ]);
 
@@ -42,14 +43,18 @@ assert.doesNotMatch(create, /jobs\[0\]|projects\[0\]/);
 assert.match(choices, /\.eq\("project_id", projectId\)/);
 assert.match(create, /getShiftFormOptions\(selectedProject\.id, selectedJob\.id\)/);
 assert.match(preCanonical, /basePath="\/admin\/shifts\/pre-shift"/);
-assert.match(pre, /basePath="\/admin\/pre-shift"/);
+assert.match(pre, /redirect\(preShiftHref\(query,\{\},"\/admin\/shifts\/pre-shift"\)\)/);
 assert.match(preMonitor, /basePath/);
 assert.match(dayCanonical, /basePath="\/admin\/shifts\/day-of"/);
 assert.match(day, /title="当日確認"/);
+assert.match(day, /redirect\(dayOfHref\(query, \{\}, "\/admin\/shifts\/day-of"\)\)/);
 assert.match(dayMonitor, /incidentAttention/);
 assert.match(dayMonitor, /assignmentId/);
 assert.match(sidebar, /label: "シフト運用", href: "\/admin\/shifts"/);
-assert.match(nestedCreate, /getShiftFormOptions\(projectId\.data, jobId\.data\)/);
+assert.match(nestedCreate, /\/admin\/shifts\/new\?\$\{new URLSearchParams/);
+assert.match(nestedCreate, /projectId: projectId\.data, jobId: jobId\.data/);
+assert.match(bulkNestedCreate, /\/admin\/shifts\/new\?\$\{new URLSearchParams/);
+assert.match(bulkNestedCreate, /projectId: project\.data, jobId: job\.data/);
 assert.match(shiftsAction, /\.eq\("id", jobId\)\.eq\("project_id", projectId\)/);
 assert.equal(preShiftHref(parsePreShiftQuery({ date: "2026-09-15" }), {}, "/admin/shifts/pre-shift"), "/admin/shifts/pre-shift?date=2026-09-15");
 assert.equal(dayOfHref(parseDayOfQuery({ date: "2026-09-15" }), {}, "/admin/shifts/day-of"), "/admin/shifts/day-of?date=2026-09-15");

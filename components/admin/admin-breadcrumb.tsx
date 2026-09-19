@@ -14,9 +14,7 @@ export function AdminBreadcrumb({ items }: { items?: readonly AdminBreadcrumbIte
   const pageOwnsBreadcrumb =
     /^\/admin\/projects\/[^/]+$/.test(pathname) ||
     /^\/admin\/shifts\/[^/]+$/.test(pathname) ||
-    pathname === "/admin/shifts" ||
-    pathname === "/admin/pre-shift" ||
-    pathname === "/admin/day-of";
+    pathname === "/admin/shifts";
   if (!items && pageOwnsBreadcrumb) return null;
   const routeItem = [...adminNavigation]
     .reverse()

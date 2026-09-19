@@ -3,7 +3,6 @@ import {
   parseProjectDetailTab,
   parseShiftDetailTab,
   projectDetailHref,
-  projectWorkflowHrefs,
   shiftDetailHref,
   shiftWorkflowHrefs,
 } from "../../components/admin/admin-detail-workflow-routes.ts";
@@ -31,19 +30,12 @@ assert.equal(projectDetailHref(projectId), "/admin/projects/project%2Fid");
 assert.equal(projectDetailHref(projectId, "shifts"), "/admin/projects/project%2Fid?tab=shifts");
 assert.equal(shiftDetailHref(shiftId, "applications"), "/admin/shifts/shift%20id?tab=applications");
 
-const projectRoutes = projectWorkflowHrefs(projectId);
-assert.equal(projectRoutes.shifts, "/admin/projects/project%2Fid?tab=shifts");
-assert.equal(projectRoutes.placement, "/admin/placement?project=project%2Fid");
-assert.equal(projectRoutes.preShift, "/admin/pre-shift?project=project%2Fid");
-assert.equal(projectRoutes.dayOf, "/admin/day-of?project=project%2Fid");
-assert.ok(Object.values(projectRoutes).every((href) => !href.includes("assignment=")));
-
 const shiftRoutes = shiftWorkflowHrefs({ projectId, shiftId, date });
 assert.equal(shiftRoutes.project, "/admin/projects/project%2Fid");
 assert.equal(shiftRoutes.shift, "/admin/shifts/shift%20id");
-assert.equal(shiftRoutes.placement, "/admin/placement?date=2026-09-11&shift=shift+id");
-assert.equal(shiftRoutes.preShift, "/admin/pre-shift?date=2026-09-11&shift=shift+id");
-assert.equal(shiftRoutes.dayOf, "/admin/day-of?date=2026-09-11&shift=shift+id");
+assert.equal(shiftRoutes.placement, "/admin/shifts/shift%20id?tab=placement");
+assert.equal(shiftRoutes.preShift, "/admin/shifts/shift%20id?tab=confirmation&phase=pre");
+assert.equal(shiftRoutes.dayOf, "/admin/shifts/shift%20id?tab=confirmation&phase=day");
 assert.equal(shiftRoutes.attendance, "/admin/attendance?date=2026-09-11&shift=shift+id");
 assert.ok(Object.values(shiftRoutes).every((href) => !href.includes("assignment=")));
 assert.ok(Object.values(shiftRoutes).every((href) => !href.startsWith("/worker")));
@@ -73,4 +65,4 @@ assert.equal(parseDayOfQuery({ date, shift: "s-1" }, now).shift, "s-1");
 assert.equal(dayOfHref(parseDayOfQuery({ date, shift: "s-1" }, now)), "/admin/day-of?date=2026-09-11&shift=s-1");
 assert.equal(parseAttendanceQuery({ date, shift: "s-1" }).shift, "s-1");
 
-console.log("Admin detail workflow tabs: PASS (29 assertions)");
+console.log("Admin detail workflow tabs: PASS (24 assertions)");
