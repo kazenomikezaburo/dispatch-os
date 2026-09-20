@@ -1,0 +1,23 @@
+
+> dispatch-os@0.1.0 dev
+> next dev
+
+▲ Next.js 16.3.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.11.64:3000
+- Environments: .env.local
+✓ Ready in 3.0s
+✓ Running next.config.ts took 222ms
+
+ GET /login 200 in 1495ms (next.js: 781ms, proxy.ts: 462ms, application-code: 253ms)
+ GET /login 200 in 51ms (next.js: 14ms, proxy.ts: 5ms, application-code: 32ms)
+ GET /login?error=invalid_credentials 200 in 28ms (next.js: 4ms, proxy.ts: 3ms, application-code: 21ms)
+ POST /login 200 in 87ms (next.js: 4ms, proxy.ts: 5ms, application-code: 78ms)
+  └─ ƒ login({}) in 37ms app/actions/auth.ts
+ GET /login?error=invalid_credentials 200 in 26ms (next.js: 5ms, proxy.ts: 3ms, application-code: 18ms)
+ POST /login?error=invalid_credentials 200 in 78ms (next.js: 4ms, proxy.ts: 4ms, application-code: 70ms)
+  └─ ƒ login({}) in 36ms app/actions/auth.ts
+ GET /login?error=invalid_credentials 200 in 25ms (next.js: 4ms, proxy.ts: 3ms, application-code: 18ms)
+ POST /login?error=invalid_credentials 200 in 62ms (next.js: 4ms, proxy.ts: 3ms, application-code: 55ms)
+  └─ ƒ login({}) in 21ms app/actions/auth.ts
+[?25h

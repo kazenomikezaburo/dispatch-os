@@ -1,4 +1,8 @@
-export type WorkerNotificationType = "incident_acknowledged" | "incident_resolved" | "announcement_published";
+export type WorkerNotificationType =
+  | "incident_acknowledged"
+  | "incident_resolved"
+  | "announcement_published"
+  | "pre_confirmation_reminder";
 
 export type WorkerNotification = {
   id: string;

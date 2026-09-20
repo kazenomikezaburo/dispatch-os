@@ -26,9 +26,45 @@ export function validatePlacementDraft(plan: PlacementPlan): string[] {
   return [...new Set(errors)];
 }
 export function plannedMinutes(rows: (PlacementSegment | PlacementBreak)[]) { return rows.reduce((n, row) => n + (Date.parse(row.endAt) - Date.parse(row.startAt)) / 60000, 0); }
-export function positionCoverage(position: PlacementPosition, segments: PlacementSegment[], breaks: PlacementBreak[]) {
-  const points = [...new Set(segments.filter((s) => s.positionId === position.id).flatMap((s) => [s.startAt, s.endAt]).concat(breaks.flatMap((b) => [b.startAt, b.endAt])))].sort();
+export function positionCoverage(position: PlacementPosition, segments: PlacementSegment[], breaks: PlacementBreak[], bounds?: { startAt: string; endAt: string }) {
+  const boundaryPoints = bounds ? [bounds.startAt, bounds.endAt] : [];
+  const withinBounds = (instant: string) => !bounds || (bounds.startAt <= instant && instant <= bounds.endAt);
+  const points = [...new Set(boundaryPoints.concat(segments.filter((s) => s.positionId === position.id).flatMap((s) => [s.startAt, s.endAt]), breaks.flatMap((b) => [b.startAt, b.endAt])).filter(withinBounds))].sort();
   return points.slice(0, -1).map((startAt, i) => { const endAt = points[i + 1]; const placed = new Set(segments.filter((s) => s.positionId === position.id && s.startAt < endAt && startAt < s.endAt && !breaks.some((b) => b.assignmentId === s.assignmentId && b.startAt < endAt && startAt < b.endAt)).map((s) => s.assignmentId)).size; return { startAt, endAt, placed, shortage: position.requiredWorkers == null ? null : Math.max(0, position.requiredWorkers - placed) }; });
+}
+
+type CoveragePlan = Pick<PlacementPlan, "startsAt" | "endsAt" | "positions" | "segments" | "breaks" | "assignments">;
+
+export type PlacementCoverageBand = {
+  position: PlacementPosition;
+  startAt: string;
+  endAt: string;
+  required: number;
+  covered: number;
+  shortage: number;
+};
+
+export function placementCoverageBands(plan: CoveragePlan): PlacementCoverageBand[] {
+  const activeAssignmentIds = new Set(plan.assignments.map((assignment) => assignment.assignmentId));
+  const segments = plan.segments.filter((segment) => activeAssignmentIds.has(segment.assignmentId));
+  const breaks = plan.breaks.filter((interval) => activeAssignmentIds.has(interval.assignmentId));
+  return plan.positions.filter((position) => !position.retired && position.requiredWorkers !== null).flatMap((position) =>
+    positionCoverage(position, segments, breaks, { startAt: plan.startsAt, endAt: plan.endsAt })
+      .map((interval) => ({ position, startAt: interval.startAt, endAt: interval.endAt, required: position.requiredWorkers ?? 0, covered: interval.placed, shortage: interval.shortage ?? 0 }))
+      .reduce<PlacementCoverageBand[]>((bands, interval) => {
+        const previous = bands.at(-1);
+        if (previous && previous.endAt === interval.startAt && previous.required === interval.required && previous.covered === interval.covered && previous.shortage === interval.shortage) {
+          previous.endAt = interval.endAt;
+          return bands;
+        }
+        bands.push(interval);
+        return bands;
+      }, []),
+  );
+}
+
+export function placementCoverageShortages(plan: CoveragePlan) {
+  return placementCoverageBands(plan).filter((interval) => interval.shortage > 0);
 }
 
 export function timelineGeometry(iso: string, startsAt: string, endsAt: string) {

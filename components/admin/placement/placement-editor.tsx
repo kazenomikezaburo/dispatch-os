@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, Plus, X } from "lucide-react";
 import { Drawer } from "@/components/admin/drawer";
 import { AdminFeedback, adminStateActionClass } from "@/components/admin/admin-state";
+import { TimeBandCoverage } from "@/components/admin/placement/time-band-coverage";
 import { savePlacementPlan } from "@/app/actions/placement";
-import { plannedMinutes, positionCoverage, resolveShiftTime, timelineGeometry, timelineMarkers, toTimeValue, validatePlacementDraft } from "@/lib/admin/placement/placement-editor-rules";
+import { plannedMinutes, resolveShiftTime, timelineGeometry, timelineMarkers, toTimeValue, validatePlacementDraft } from "@/lib/admin/placement/placement-editor-rules";
 import type { PlacementBreak, PlacementPlan, PlacementSegment } from "@/lib/admin/placement/placement-types";
 
 const field = "min-h-11 w-full rounded-control border border-border-strong bg-surface px-3 text-sm focus-visible:outline-2 focus-visible:outline-focus-ring";
@@ -59,7 +60,7 @@ export function PlacementEditor({ initial, closeHref, shiftLabel, assignmentId =
           {errors.filter((message)=>message.includes(a.worker?.name ?? "スタッフ")).map((message)=><p role="alert" key={message} className="mt-2 rounded-control bg-danger-subtle p-3 text-xs font-medium text-danger-foreground">{message} 対象の時間を修正してください。</p>)}
         </li>)}</ul>
       </section>
-      <section aria-labelledby="coverage-heading"><h3 id="coverage-heading" className="font-semibold">Coverage（派生値）</h3><ul className="mt-2 space-y-2">{activePositions.map((p)=>{const coverage=positionCoverage(p,draft.segments,draft.breaks);const shortage=coverage.filter(c=>c.shortage&&c.shortage>0);return <li key={p.id} className="rounded-card bg-surface-subtle p-3 text-sm"><span className="font-medium">{p.label||"名称未入力"}</span>：{p.requiredWorkers==null?"必要人数未設定":shortage.length?`不足時間帯 ${shortage.length}件`:`必要${p.requiredWorkers}名を充足`}</li>})}</ul></section>
+      <TimeBandCoverage plan={draft} headingAs="h3" headingId="placement-editor-time-band-coverage-heading" />
       {errors.length>0 && <AdminFeedback kind="error" message={errors[0]} />}
       {draft.correctionRequired && <label className="block text-sm font-medium">開始後の変更理由<textarea id="placement-reason" required maxLength={500} rows={3} className={`${field} mt-1 py-2`} /><span className="mt-1 block text-xs text-foreground-muted">監査Revisionへ保存されます。</span></label>}
     </div>

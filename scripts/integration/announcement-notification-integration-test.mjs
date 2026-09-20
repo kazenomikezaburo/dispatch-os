@@ -110,6 +110,7 @@ try {
   pass("own resolver returns only the canonical Announcement identity", (() => { const value = rpc(actors.workerA, `public.resolve_announcement_notification_source_context('${notificationId}'::uuid)`); return value.ok && value.source_available && value.announcement_id === draft.announcement_id && Object.keys(value).sort().join(",") === "announcement_id,ok,source_available"; })());
   pass("foreign Worker receives safe unavailable", (() => { const value = rpc(actors.workerB, `public.resolve_announcement_notification_source_context('${notificationId}'::uuid)`); return value.ok && !value.source_available && value.announcement_id === null; })());
   pass("Incident resolver safely rejects Announcement notification", (() => { const value = rpc(actors.workerA, `public.resolve_in_app_notification_source_context('${notificationId}'::uuid)`); return value.ok && !value.source_available && value.assignment_id === null; })());
+  pass("Reminder resolver safely rejects Announcement notification", (() => { const value = rpc(actors.workerA, `public.resolve_pre_confirmation_reminder_source_context('${notificationId}'::uuid)`); return value.ok && !value.source_available && value.assignment_id === null; })());
   pass("foreign Worker cannot select another recipient notification", run(roleSql(actors.workerB, `select count(*)::text from public.in_app_notifications where id='${notificationId}';`)).endsWith("0"));
 
   run(`delete from public.in_app_notifications where id='${notificationId}';`);

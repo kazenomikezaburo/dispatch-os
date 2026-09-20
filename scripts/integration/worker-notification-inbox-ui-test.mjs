@@ -21,7 +21,7 @@ test("list uses a bounded keyset page", () => { assert.match(readModel, /PAGE_SI
 test("read model never reads incident internals", () => { assert.doesNotMatch(readModel, /operational_incident/); assert.doesNotMatch(readModel, /source_incident_event_id/); });
 test("open validates id and authenticates Worker", () => { assert.match(action, /uuidSchema\.safeParse/); assert.match(action, /await requireWorker\(\)/); });
 test("explicit open uses existing mark-read RPC", () => assert.match(action, /\.rpc\("mark_in_app_notification_read"/));
-test("source CTA uses type-specific safe resolver RPCs", () => { assert.match(action, /resolve_in_app_notification_source_context/); assert.match(action, /resolve_announcement_notification_source_context/); });
+test("source CTA uses type-specific safe resolver RPCs", () => { assert.match(action, /resolve_in_app_notification_source_context/); assert.match(action, /resolve_announcement_notification_source_context/); assert.match(action, /resolve_pre_confirmation_reminder_source_context/); });
 test("action contains no direct notification DML", () => assert.doesNotMatch(action, /\.insert\(|\.update\(|\.delete\(/));
 test("action exposes no incident or event identifiers", () => assert.doesNotMatch(action, /incidentId|eventId|source_incident/));
 test("list render itself does not mark read", () => assert.equal((inbox.match(/openWorkerNotification\(/g) ?? []).length, 1));
@@ -30,6 +30,7 @@ test("read state is expressed with text", () => { assert.match(inbox, /"既読" 
 test("safe unavailable creates no source URL", () => assert.match(inbox, /sourceId \? .*href=\{sourceKind === "announcement"/s));
 test("safe unavailable message hides internal reason", () => { assert.match(inbox, /関連する勤務情報は現在表示できません/); assert.doesNotMatch(inbox, /deleted|ownership|event missing|source invalid/i); });
 test("Announcement notification has a type label and canonical CTA", () => { assert.match(inbox, /announcement_published: "お知らせ"/); assert.match(inbox, /`\/worker\/announcements\/\$\{sourceId\}`/); });
+test("Reminder notification has a type label and canonical Assignment CTA", () => { assert.match(inbox, /pre_confirmation_reminder: "勤務前確認"/); assert.match(inbox, /`\/worker\/assignments\/\$\{sourceId\}`/); });
 test("shell entry has an accessible unread badge label", () => { assert.match(layout, /href="\/worker\/notifications"/); assert.match(layout, /通知、未読\$\{unreadCount\}件/); assert.match(layout, /href="\/worker\/announcements" aria-label="お知らせ"/); });
 test("zero unread hides the visual badge", () => assert.match(layout, /unreadCount > 0 && <span/));
 test("route remains server guarded", () => assert.match(page, /await requireWorker\(\)/));

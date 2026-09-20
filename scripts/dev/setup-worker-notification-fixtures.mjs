@@ -13,6 +13,9 @@ const ids = {
   acknowledgedEvent: "98100000-0000-4000-8004-000000000002",
   unavailableNotification: "98100000-0000-4000-8005-000000000001",
   availableNotification: "98100000-0000-4000-8005-000000000002",
+  reminderCommand: "98100000-0000-4000-8006-000000000001",
+  reminderOccurrence: "98100000-0000-4000-8007-000000000001",
+  reminderNotification: "98100000-0000-4000-8005-000000000003",
 };
 
 function run(sql) {
@@ -21,8 +24,13 @@ function run(sql) {
 
 function cleanup() {
   run(`begin;
+update private.pre_confirmation_reminder_occurrences
+set outcome='not_eligible', notification_id=null
+where id='${ids.reminderOccurrence}';
 delete from private.incident_notification_projection_receipts where notification_id in ('${ids.availableNotification}','${ids.unavailableNotification}');
-delete from public.in_app_notifications where id in ('${ids.availableNotification}','${ids.unavailableNotification}');
+delete from public.in_app_notifications where id in ('${ids.availableNotification}','${ids.unavailableNotification}','${ids.reminderNotification}');
+delete from private.pre_confirmation_reminder_occurrences where id='${ids.reminderOccurrence}';
+delete from private.pre_confirmation_reminder_commands where id='${ids.reminderCommand}';
 delete from public.operational_incident_events where incident_id='${ids.incident}';
 delete from public.operational_incidents where id='${ids.incident}';
 delete from public.assignments where id='${ids.assignment}';
@@ -52,6 +60,17 @@ insert into public.in_app_notifications (id,recipient_profile_id,notification_ty
 values
 ('${ids.availableNotification}','${ids.workerProfile}','incident_acknowledged','${ids.acknowledgedEvent}','Help Requestへの対応が開始されました','管理者がHelp Requestを確認し、対応を開始しました。',now()-interval '7 minutes'),
 ('${ids.unavailableNotification}','${ids.workerProfile}','incident_acknowledged','${ids.createdEvent}','勤務情報を確認してください','関連情報の更新を確認してください。',now()-interval '5 minutes');
+insert into private.pre_confirmation_reminder_commands
+  (id,actor_profile_id,idempotency_key,mode,request_fingerprint,created_at,completed_at)
+values
+  ('${ids.reminderCommand}','${ids.managerProfile}','98100000-0000-4000-8010-000000000001','single','single:${ids.assignment}',now()-interval '4 minutes',now()-interval '4 minutes');
+insert into private.pre_confirmation_reminder_occurrences
+  (id,command_id,assignment_id,recipient_profile_id,outcome,notification_id,requested_at)
+values
+  ('${ids.reminderOccurrence}','${ids.reminderCommand}','${ids.assignment}','${ids.workerProfile}','projected','${ids.reminderNotification}',now()-interval '4 minutes');
+insert into public.in_app_notifications
+  (id,recipient_profile_id,notification_type,source_pre_confirmation_reminder_id,title,summary,created_at)
+values
+  ('${ids.reminderNotification}','${ids.workerProfile}','pre_confirmation_reminder','${ids.reminderOccurrence}','勤務前確認の回答をお願いします','勤務前確認が未回答です。勤務詳細から回答してください。',now()-interval '4 minutes');
 commit;`);
-console.log(JSON.stringify({ assignmentId: ids.assignment, availableNotificationId: ids.availableNotification, unavailableNotificationId: ids.unavailableNotification }));
-
+console.log(JSON.stringify({ assignmentId: ids.assignment, availableNotificationId: ids.availableNotification, unavailableNotificationId: ids.unavailableNotification, reminderNotificationId: ids.reminderNotification }));

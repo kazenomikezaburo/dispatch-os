@@ -12,6 +12,7 @@ const typeLabels = {
   incident_acknowledged: "対応開始",
   incident_resolved: "解決済み",
   announcement_published: "お知らせ",
+  pre_confirmation_reminder: "勤務前確認",
 } as const;
 const date = new Intl.DateTimeFormat("ja-JP", {
   timeZone: "Asia/Tokyo",
