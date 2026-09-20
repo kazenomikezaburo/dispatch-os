@@ -1,0 +1,66 @@
+
+> dispatch-os@0.1.0 dev
+> next dev
+
+▲ Next.js 16.3.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.11.64:3000
+- Environments: .env.local
+✓ Ready in 392ms
+✓ Running next.config.ts took 36ms
+
+ GET /login 200 in 368ms (next.js: 111ms, proxy.ts: 155ms, application-code: 102ms)
+ GET /worker 200 in 344ms (next.js: 37ms, proxy.ts: 10ms, application-code: 297ms)
+ POST /login 200 in 527ms (next.js: 4ms, proxy.ts: 5ms, application-code: 518ms)
+  └─ ƒ login({}) in 160ms app/actions/auth.ts
+ GET /worker/notifications 200 in 87ms (next.js: 40ms, proxy.ts: 5ms, application-code: 43ms)
+ POST /worker/notifications 200 in 73ms (next.js: 5ms, proxy.ts: 6ms, application-code: 62ms)
+  └─ ƒ openWorkerNotification("98100000-0000-4000-8005-000000000003") in 45ms app/actions/worker-notifications.ts
+ GET /worker/notifications 200 in 84ms (next.js: 6ms, proxy.ts: 6ms, application-code: 72ms)
+ GET /worker/assignments/98100000-0000-4000-8002-000000000001 200 in 623ms (next.js: 522ms, proxy.ts: 8ms, application-code: 94ms)
+ GET /worker/notifications 200 in 162ms (next.js: 5ms, proxy.ts: 5ms, application-code: 152ms)
+ POST /worker/notifications 200 in 62ms (next.js: 5ms, proxy.ts: 7ms, application-code: 50ms)
+  └─ ƒ openWorkerNotification("98100000-0000-4000-8005-000000000003") in 40ms app/actions/worker-notifications.ts
+ GET /worker/notifications 200 in 65ms (next.js: 4ms, proxy.ts: 5ms, application-code: 56ms)
+ GET /worker/notifications 200 in 109ms (next.js: 5ms, proxy.ts: 5ms, application-code: 99ms)
+ POST /worker/notifications 200 in 52ms (next.js: 5ms, proxy.ts: 5ms, application-code: 42ms)
+  └─ ƒ openWorkerNotification("98100000-0000-4000-8005-000000000003") in 34ms app/actions/worker-notifications.ts
+ GET /worker/notifications 200 in 72ms (next.js: 5ms, proxy.ts: 4ms, application-code: 63ms)
+ GET /admin/attention 307 in 196ms (next.js: 44ms, proxy.ts: 15ms, application-code: 137ms)
+ GET /worker 200 in 335ms (next.js: 5ms, proxy.ts: 3ms, application-code: 328ms)
+ GET /login 200 in 27ms (next.js: 5ms, proxy.ts: 3ms, application-code: 19ms)
+ POST /worker 200 in 111ms (next.js: 5ms, proxy.ts: 5ms, application-code: 100ms)
+  └─ ƒ logout() in 62ms app/actions/auth.ts
+ GET /admin 200 in 167ms (next.js: 27ms, proxy.ts: 4ms, application-code: 136ms)
+ POST /login 200 in 338ms (next.js: 4ms, proxy.ts: 4ms, application-code: 330ms)
+  └─ ƒ login({}) in 150ms app/actions/auth.ts
+ GET /admin/attention 200 in 159ms (next.js: 4ms, proxy.ts: 5ms, application-code: 150ms)
+ POST /admin/attention 200 in 179ms (next.js: 5ms, proxy.ts: 6ms, application-code: 168ms)
+  └─ ƒ sendAttentionReminder({"assignmentId":"16150ba6-4190-41e3-82d4-9af562e9334f","idempotencyKey":"7452b4f9-31ae-4842-9c13-297be49bd164"}) in 29ms app/actions/attention-reminders.ts
+ GET /admin/attention 200 in 124ms (next.js: 6ms, proxy.ts: 4ms, application-code: 114ms)
+ POST /admin/attention 200 in 164ms (next.js: 4ms, proxy.ts: 5ms, application-code: 154ms)
+  └─ ƒ sendAttentionReminder({"assignmentId":"16150ba6-4190-41e3-82d4-9af562e9334f","idempotencyKey":"c120360d-2e07-4dfa-83f8-69ede829441f"}) in 33ms app/actions/attention-reminders.ts
+ GET /admin/attention 200 in 118ms (next.js: 4ms, proxy.ts: 4ms, application-code: 109ms)
+ POST /admin/attention 200 in 212ms (next.js: 4ms, proxy.ts: 4ms, application-code: 204ms)
+  └─ ƒ sendAttentionReminders({"assignmentIds":["16150ba6-4190-41e3-82d4-9af562e9334f","178954a2-6a92-43f0-9b4b-228239b3f41f"],"idempotencyKey":"aeea1e63-c466-4f0c-8ee8-f57c2f84d760"}) in 31ms app/actions/attention-reminders.ts
+ GET /admin/attention 200 in 128ms (next.js: 5ms, proxy.ts: 5ms, application-code: 119ms)
+✓ Compiled in 106ms
+ GET /admin/attention 200 in 58ms (next.js: 10ms, proxy.ts: 4ms, application-code: 44ms)
+ GET /login 200 in 25ms (next.js: 4ms, proxy.ts: 3ms, application-code: 18ms)
+ POST /admin/attention 200 in 94ms (next.js: 5ms, proxy.ts: 4ms, application-code: 85ms)
+  └─ ƒ logout() in 50ms app/actions/auth.ts
+ GET /worker 200 in 308ms (next.js: 5ms, proxy.ts: 4ms, application-code: 299ms)
+ POST /login 200 in 468ms (next.js: 4ms, proxy.ts: 4ms, application-code: 460ms)
+  └─ ƒ login({}) in 142ms app/actions/auth.ts
+ GET /worker/notifications 200 in 57ms (next.js: 5ms, proxy.ts: 5ms, application-code: 48ms)
+ POST /worker/notifications 200 in 49ms (next.js: 5ms, proxy.ts: 6ms, application-code: 38ms)
+  └─ ƒ openWorkerNotification("8f86a261-d447-4123-baee-4ffbb5652c9a") in 30ms app/actions/worker-notifications.ts
+ GET /worker/notifications 200 in 59ms (next.js: 5ms, proxy.ts: 4ms, application-code: 50ms)
+ GET /worker/assignments/178954a2-6a92-43f0-9b4b-228239b3f41f 200 in 105ms (next.js: 17ms, proxy.ts: 5ms, application-code: 83ms)
+ GET /login 200 in 33ms (next.js: 4ms, proxy.ts: 4ms, application-code: 26ms)
+ POST /worker/assignments/178954a2-6a92-43f0-9b4b-228239b3f41f 200 in 114ms (next.js: 13ms, proxy.ts: 5ms, application-code: 96ms)
+  └─ ƒ logout() in 48ms app/actions/auth.ts
+ GET /admin 200 in 135ms (next.js: 4ms, proxy.ts: 3ms, application-code: 128ms)
+ POST /login 200 in 262ms (next.js: 4ms, proxy.ts: 4ms, application-code: 254ms)
+  └─ ƒ login({}) in 110ms app/actions/auth.ts
+ GET /admin/attention 200 in 170ms (next.js: 4ms, proxy.ts: 4ms, application-code: 161ms)

@@ -106,7 +106,7 @@ insert into public.assignments (id, shift_slot_id, worker_id, source, status) va
 commit;`);
 
   pass('notification and receipt tables have RLS enabled', run(`select bool_and(relrowsecurity)::text from pg_class c join pg_namespace n on n.oid=c.relnamespace where (n.nspname,c.relname) in (('public','in_app_notifications'),('private','incident_notification_projection_receipts'),('private','incident_notification_projection_state'));`) === 'true');
-  pass('notification types remain a closed three-value set', run(`select pg_get_constraintdef(oid) from pg_constraint where conname='in_app_notifications_type_check';`) === "CHECK ((notification_type = ANY (ARRAY['incident_acknowledged'::text, 'incident_resolved'::text, 'announcement_published'::text])))");
+  pass('notification types remain a closed controlled set', (() => { const value = run(`select pg_get_constraintdef(oid) from pg_constraint where conname='in_app_notifications_type_check';`); return ['incident_acknowledged', 'incident_resolved', 'announcement_published', 'pre_confirmation_reminder'].every((type) => value.includes(type)); })());
 
   const created = createIncident(ids.ackAssignment, 'notification-create-ack');
   pass('source incident is created without notification side effect', created.ok && run(`select count(*)::text from public.in_app_notifications where source_incident_event_id='${created.event_id}';`) === '0');

@@ -44,10 +44,15 @@ export async function openWorkerNotification(notificationId: string) {
     };
   }
 
-  const isAnnouncement = notification.data.notification_type === "announcement_published";
-  const source = await supabase.rpc(isAnnouncement
+  const notificationType = notification.data.notification_type;
+  const isAnnouncement = notificationType === "announcement_published";
+  const isReminder = notificationType === "pre_confirmation_reminder";
+  const resolver = isAnnouncement
     ? "resolve_announcement_notification_source_context"
-    : "resolve_in_app_notification_source_context", {
+    : isReminder
+      ? "resolve_pre_confirmation_reminder_source_context"
+      : "resolve_in_app_notification_source_context";
+  const source = await supabase.rpc(resolver, {
     p_notification_id: id.data,
   });
   const sourceResult = objectResult(source.data);

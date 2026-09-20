@@ -5,6 +5,7 @@ import {
   CalendarDays,
   ClipboardClock,
   LayoutDashboard,
+  ListTodo,
   MessageSquareWarning,
   Megaphone,
   Settings,
@@ -24,7 +25,10 @@ const future = (label: string, icon: LucideIcon): AdminNavItem => ({ label, icon
 
 // Full IA is kept here. Future destinations have no URL; placeholders are not links.
 export const adminNavigationGroups: readonly AdminNavGroup[] = [
-  { label: "ホーム", items: [{ label: "ホーム", href: "/admin", icon: LayoutDashboard, availability: "implemented" }] },
+  { label: "ホーム", items: [
+    { label: "ホーム", href: "/admin", icon: LayoutDashboard, availability: "implemented" },
+    { label: "要対応", href: "/admin/attention", icon: ListTodo, availability: "implemented" },
+  ] },
   { label: "案件・運用", items: [
     { label: "案件", href: "/admin/projects", icon: BriefcaseBusiness, availability: "implemented" },
     { label: "シフト運用", href: "/admin/shifts", icon: CalendarDays, availability: "implemented" },

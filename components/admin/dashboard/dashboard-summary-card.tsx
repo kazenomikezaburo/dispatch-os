@@ -5,7 +5,7 @@ type DashboardSummaryCardProps = {
   value: number;
   unit: "名" | "件";
   description: string;
-  tone: "primary" | "success" | "attention";
+  tone: "primary" | "success" | "attention" | "danger";
 };
 
 export function DashboardSummaryCard({
@@ -15,5 +15,5 @@ export function DashboardSummaryCard({
   description,
   tone,
 }: DashboardSummaryCardProps) {
-  return <AdminKpiCard label={label} value={value} unit={unit} description={description} tone={tone === "primary" ? "info" : tone === "attention" ? "warning" : "success"} />;
+  return <AdminKpiCard label={label} value={value} unit={unit} description={description} tone={tone === "primary" ? "info" : tone === "attention" ? "warning" : tone} />;
 }
