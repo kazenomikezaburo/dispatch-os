@@ -9,6 +9,7 @@ import { AdminPageHeader } from "@/components/admin/admin-page-header";
 import { AdminBreadcrumb } from "@/components/admin/admin-breadcrumb";
 import { isEditorMode } from "@/components/admin/editor/admin-editor-contract";
 import { PlacementEditor } from "@/components/admin/placement/placement-editor";
+import { CandidatePickerDrawer } from "@/components/admin/placement/candidate-picker-drawer";
 import { PlacementFocusRestore } from "@/components/admin/placement/placement-focus-restore";
 import { ShiftPlacementSurface } from "@/components/admin/placement/shift-placement-surface";
 import { ShiftApplicationList } from "@/components/admin/shifts/shift-application-list";
@@ -22,6 +23,7 @@ import { DayOfMonitor } from "@/components/admin/day-of/day-of-monitor";
 import { DayOfDrawer } from "@/components/admin/day-of/day-of-drawer";
 import { ShiftEditPageForm } from "@/components/admin/shifts/shift-edit-page-form";
 import { getPlacementPlan } from "@/lib/admin/placement/get-placement-plan";
+import { getShiftCandidates } from "@/lib/admin/staff/get-shift-candidates";
 import { getShiftDetail } from "@/lib/admin/shifts/get-shift-detail";
 import { getPreShiftMonitor } from "@/lib/admin/pre-shift/get-pre-shift-monitor";
 import { getDayOf } from "@/lib/admin/day-of/get-day-of";
@@ -66,9 +68,12 @@ export default async function ShiftDetailPage({ params, searchParams }: PageProp
   }
   const placementPlan = tab === "placement" ? await getPlacementPlan(detail.id) : null;
   const requestedAssignmentId = first(query.assignmentId);
-  const assignmentId = placementPlan && requestedAssignmentId && placementPlan.assignments.some((item) => item.assignmentId === requestedAssignmentId) ? requestedAssignmentId : null;
-  const placementMode = first(query.placement) === "create" ? "create" : assignmentId ? "edit" : null;
   const placementHref = shiftDetailHref(detail.id, "placement");
+  const candidateOpen = tab === "placement" && first(query.candidate) === "picker";
+  const assignmentId = placementPlan && requestedAssignmentId && placementPlan.assignments.some((item) => item.assignmentId === requestedAssignmentId) ? requestedAssignmentId : null;
+  const placementMode = candidateOpen ? null : first(query.placement) === "create" ? "create" : assignmentId ? "edit" : null;
+  const candidateResult = candidateOpen ? await getShiftCandidates(detail.id) : null;
+  const candidateHref = `${placementHref}&candidate=picker`;
   const shiftDate = tokyoDate(detail.startsAt);
   const confirmationHref = singleShiftConfirmationHref(detail.id, confirmationPhase.phase);
   const preQuery: PreShiftQuery = { date: shiftDate, q: "", project: "", shift: detail.id, status: "all", assignment: "" };
@@ -92,7 +97,7 @@ export default async function ShiftDetailPage({ params, searchParams }: PageProp
       ["必要人数", detail.requiredWorkers], ["配置済み", detail.assignedWorkers], ["応募", detail.applicationCount], ["不足", detail.shortage],
     ].map(([label, metric]) => <div key={label} className="rounded-card border border-border bg-surface p-4"><p className="text-xs font-medium text-foreground-muted">{label}</p><p className="mt-1 text-2xl font-semibold tabular-nums">{metric}<span className="ml-1 text-xs font-normal">名</span></p></div>)}</section><div className="grid gap-6 xl:grid-cols-2"><ShiftInfoSection detail={detail} /><ShiftJobConditions detail={detail} /></div></div>}
     {tab === "applications" && <ShiftApplicationList shiftId={detail.id} applications={detail.applications} assignedWorkers={detail.assignedWorkers} requiredWorkers={detail.requiredWorkers} />}
-    {tab === "placement" && (placementPlan ? <><PlacementFocusRestore enabled={!placementMode} /><ShiftPlacementSurface plan={placementPlan} baseHref={placementHref} />{placementMode && <PlacementEditor initial={placementPlan} closeHref={placementHref} shiftLabel={`${detail.project.name} / ${detail.job.name}`} assignmentId={assignmentId} returnFocusId={placementMode === "create" ? "placement-create-trigger" : `placement-assignment-${assignmentId}`} />}</> : <AdminErrorState title="配置プランを取得できませんでした。"><Link href={placementHref}>再読み込み</Link></AdminErrorState>)}
+    {tab === "placement" && (placementPlan ? <><PlacementFocusRestore enabled={!placementMode && !candidateOpen} /><ShiftPlacementSurface plan={placementPlan} baseHref={placementHref} candidateHref={candidateHref} />{placementMode && <PlacementEditor initial={placementPlan} closeHref={placementHref} shiftLabel={`${detail.project.name} / ${detail.job.name}`} assignmentId={assignmentId} returnFocusId={placementMode === "create" ? "placement-create-trigger" : `placement-assignment-${assignmentId}`} />}{candidateOpen && <CandidatePickerDrawer shiftId={detail.id} candidates={candidateResult?.ok ? candidateResult.items : []} truncated={candidateResult?.ok ? candidateResult.truncated : false} loadError={!candidateResult?.ok} closeHref={placementHref} shiftLabel={`${detail.project.name} / ${detail.job.name}`} />}</> : <AdminErrorState title="配置プランを取得できませんでした。"><Link href={placementHref}>再読み込み</Link></AdminErrorState>)}
     {tab === "confirmation" && <div className="space-y-5"><ConfirmationPhaseNav shiftId={detail.id} phase={confirmationPhase.phase} />
       {confirmationPhase.phase === "pre" ? !preResult?.ok ? <AdminErrorState title="前日確認を取得できませんでした。" /> : preItems.length === 0 ? <AdminEmptyState title="このシフトの対象スタッフはいません。" description="配置済みスタッフが追加されると、ここに確認状況が表示されます。" /> : <PreShiftMonitor items={preItems} query={preQuery} assignmentHref={(id) => singleShiftConfirmationHref(detail.id, "pre", id)} /> : !dayResult?.ok ? <AdminErrorState title="当日確認を取得できませんでした。" /> : dayItems.length === 0 ? <AdminEmptyState title="このシフトの対象スタッフはいません。" description="配置済みスタッフが追加されると、ここに勤務状態が表示されます。" /> : <DayOfMonitor items={dayItems} query={dayQuery} assignmentHref={(id) => singleShiftConfirmationHref(detail.id, "day", id)} />}
       {requestedConfirmationAssignmentId && (confirmationPhase.phase === "pre" ? preSelected ? <PreShiftDrawer item={preSelected} closeHref={confirmationHref} /> : <div className="fixed inset-0 z-50 grid place-items-center bg-[var(--surface-overlay)] p-4"><AdminNotFoundState><Link href={confirmationHref} className={adminStateActionClass}>確認へ戻る</Link></AdminNotFoundState></div> : daySelected ? <DayOfDrawer item={daySelected} date={shiftDate} closeHref={confirmationHref} /> : <div className="fixed inset-0 z-50 grid place-items-center bg-[var(--surface-overlay)] p-4"><AdminNotFoundState><Link href={confirmationHref} className={adminStateActionClass}>確認へ戻る</Link></AdminNotFoundState></div>)}
