@@ -4,7 +4,7 @@ import { TimeBandCoverage } from "./time-band-coverage";
 import { plannedMinutes, placementCoverageShortages, toTimeValue } from "@/lib/admin/placement/placement-editor-rules";
 import type { PlacementPlan } from "@/lib/admin/placement/placement-types";
 
-export function ShiftPlacementSurface({ plan, baseHref }: { plan: PlacementPlan; baseHref: string }) {
+export function ShiftPlacementSurface({ plan, baseHref, candidateHref }: { plan: PlacementPlan; baseHref: string; candidateHref: string }) {
   const activePositions = plan.positions.filter((position) => !position.retired).sort((a, b) => a.displayOrder - b.displayOrder);
   const placedAssignments = new Set(plan.segments.map((segment) => segment.assignmentId)).size;
   const unassigned = Math.max(plan.assignments.length - placedAssignments, 0);
@@ -21,7 +21,7 @@ export function ShiftPlacementSurface({ plan, baseHref }: { plan: PlacementPlan;
     </section>
 
     <section aria-labelledby="placement-positions-heading" className="rounded-panel border border-border bg-surface p-4 sm:p-5">
-      <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 id="placement-positions-heading" className="text-lg font-semibold">配置ポジション</h2><p className="mt-1 text-sm text-foreground-muted">Version {plan.version}・{toTimeValue(plan.startsAt)}–{toTimeValue(plan.endsAt)}</p></div><PlacementEditorLink id="placement-create-trigger" href={`${baseHref}&placement=create`}>配置を追加</PlacementEditorLink></div>
+      <div className="flex flex-wrap items-center justify-between gap-3"><div><h2 id="placement-positions-heading" className="text-lg font-semibold">配置ポジション</h2><p className="mt-1 text-sm text-foreground-muted">Version {plan.version}・{toTimeValue(plan.startsAt)}–{toTimeValue(plan.endsAt)}</p></div><div className="flex flex-wrap gap-2"><PlacementEditorLink id="candidate-picker-trigger" href={candidateHref}>候補を探す</PlacementEditorLink><PlacementEditorLink id="placement-create-trigger" href={`${baseHref}&placement=create`}>配置を追加</PlacementEditorLink></div></div>
       {activePositions.length === 0 ? <p className="mt-4 rounded-control bg-surface-subtle p-4 text-sm text-foreground-muted">配置ポジションは未設定です。配置を追加してプランを作成できます。</p> : <ul className="mt-4 grid gap-3 md:grid-cols-2">{activePositions.map((position) => {
         const shortage = coverageShortages.filter((item) => item.position.id === position.id).length;
         const workers = new Set(plan.segments.filter((segment) => segment.positionId === position.id).map((segment) => segment.assignmentId)).size;
