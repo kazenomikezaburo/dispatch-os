@@ -24,6 +24,12 @@ export type ProjectDetailJob = {
   transportationFeeCap: number | null;
   dressCode: string | null;
   requirements: string | null;
+  structuredRequirements: {
+    skills: StructuredRequirementItem[];
+    qualifications: StructuredRequirementItem[];
+    skillOptions: StructuredRequirementOption[];
+    qualificationOptions: StructuredRequirementOption[];
+  };
   mealNotes: string | null;
   recruitmentNotes: string | null;
   manualUrl: string | null;
@@ -36,6 +42,9 @@ export type ProjectDetailJob = {
   shortage: number;
   shifts: ProjectDetailShift[];
 };
+
+export type StructuredRequirementItem = { id:string; code:string; name:string; isActive:boolean };
+export type StructuredRequirementOption = StructuredRequirementItem;
 
 export type ProjectDetail = {
   id: string;

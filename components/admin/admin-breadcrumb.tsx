@@ -23,6 +23,8 @@ export function AdminBreadcrumb({ items }: { items?: readonly AdminBreadcrumbIte
     ? [{ label: "マスタ", href: "/admin/clients" }, { label: "取引先" }]
     : pathname === "/admin/workplaces"
       ? [{ label: "マスタ", href: "/admin/clients" }, { label: "勤務先" }]
+      : pathname === "/admin/staff-credentials"
+        ? [{ label: "マスタ", href: "/admin/clients" }, { label: "スキル・資格" }]
       : undefined;
   const communicationItems = pathname === "/admin/incidents"
     ? [{ label: "連絡", href: "/admin/incidents" }, { label: "ヘルプリクエスト" }]

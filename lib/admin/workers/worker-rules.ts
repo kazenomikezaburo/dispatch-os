@@ -3,7 +3,7 @@ import type { WorkerStatus } from "./worker-types";
 export const WORKER_PAGE_SIZE = 20;
 export const WORKER_HISTORY_PAGE_SIZE = 20;
 export type WorkerListQuery = { q: string; status: "all" | WorkerStatus; page: number };
-export type WorkerTab = "overview" | "history" | "profile";
+export type WorkerTab = "overview" | "credentials" | "history" | "profile";
 
 export function parseWorkerListQuery(value: Record<string, string | string[] | undefined>): WorkerListQuery {
   const rawStatus = Array.isArray(value.status) ? value.status[0] : value.status;
@@ -18,7 +18,7 @@ export function parseWorkerListQuery(value: Record<string, string | string[] | u
 
 export function parseWorkerTab(value?: string | string[]): WorkerTab {
   const tab = Array.isArray(value) ? value[0] : value;
-  return tab === "history" || tab === "profile" ? tab : "overview";
+  return tab === "credentials" || tab === "history" || tab === "profile" ? tab : "overview";
 }
 
 export function parseHistoryPage(value?: string | string[]) {

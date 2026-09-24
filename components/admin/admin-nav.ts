@@ -8,6 +8,7 @@ import {
   ListTodo,
   MessageSquareWarning,
   Megaphone,
+  BadgeCheck,
   Settings,
   Users,
 } from "lucide-react";
@@ -40,7 +41,10 @@ export const adminNavigationGroups: readonly AdminNavGroup[] = [
   { label: "集計", items: [future("月次勤怠", ClipboardClock), future("交通費", ClipboardClock), future("締め・NEO", ClipboardClock)] },
   { label: "連絡", items: [{ label: "ヘルプリクエスト", href: "/admin/incidents", icon: MessageSquareWarning, availability: "implemented" }, { label: "お知らせ", href: "/admin/announcements", icon: Megaphone, availability: "implemented" }, future("通知", Users)] },
   { label: "ナレッジ", items: [future("FAQ", BriefcaseBusiness), future("マニュアル", BriefcaseBusiness), future("勤務ルール", BriefcaseBusiness)] },
-  { label: "マスタ", items: [{ label: "取引先", href: "/admin/clients", icon: Building2, availability: "implemented" }] },
+  { label: "マスタ", items: [
+    { label: "取引先", href: "/admin/clients", icon: Building2, availability: "implemented" },
+    { label: "スキル・資格", href: "/admin/staff-credentials", icon: BadgeCheck, availability: "implemented" },
+  ] },
   { label: "設定", items: [{ label: "設定", href: "/admin/settings", icon: Settings, availability: "placeholder" }, future("監査ログ", ClipboardClock)] },
 ];
 
