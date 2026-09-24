@@ -44,3 +44,10 @@ export type WorkerDetail = {
 };
 
 export type WorkerBranchOption = { id: string; name: string };
+
+export type SkillMasterItem = { id:string; code:string; name:string; description:string|null; isActive:boolean; updatedAt:string };
+export type QualificationExpiryPolicy = "none"|"optional"|"required";
+export type QualificationMasterItem = SkillMasterItem & { expiryPolicy:QualificationExpiryPolicy };
+export type WorkerSkillHolding = { skillId:string; code:string; name:string; masterActive:boolean; acquiredOn:string|null; isActive:boolean };
+export type WorkerQualificationHolding = { qualificationId:string; code:string; name:string; masterActive:boolean; expiryPolicy:QualificationExpiryPolicy; issuedOn:string|null; validFrom:string|null; expiresOn:string|null; revokedAt:string|null; state:"valid"|"not_yet_valid"|"expired"|"revoked"|"master_inactive" };
+export type WorkerCredentialData = { skills:WorkerSkillHolding[]; qualifications:WorkerQualificationHolding[]; skillOptions:SkillMasterItem[]; qualificationOptions:QualificationMasterItem[] };

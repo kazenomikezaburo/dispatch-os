@@ -7,6 +7,9 @@ import type { ProjectStatus } from "./project-types";
 
 type ProjectRow = { id: string; branch_id: string; client_id: string; name: string; status: ProjectStatus; start_date: string; end_date: string; description: string | null; updated_at: string; clients: { name: string } | null };
 type JobRow = { id: string; project_id: string; name: string; status: JobStatus; description: string | null; hourly_wage: number | null; transportation_fee_cap: number | null; dress_code: string | null; requirements: string | null; meal_notes: string | null; recruitment_notes: string | null; manual_url: string | null; updated_at: string; workplaces: { id: string; name: string; address: string }; shift_slots: { id: string; label: string | null; starts_at: string; ends_at: string; status: ShiftStatus; required_workers: number }[] };
+type MasterRow={id:string;code:string;name:string;is_active:boolean};
+type SkillRequirementRow={job_id:string;skill_id:string};
+type QualificationRequirementRow={job_id:string;qualification_id:string};
 
 export async function getProjectDetail(projectId: string): Promise<ProjectDetailResult> {
   try {
@@ -19,7 +22,19 @@ export async function getProjectDetail(projectId: string): Promise<ProjectDetail
     const jobsResult = await supabase.from("jobs").select("id, project_id, name, status, description, hourly_wage, transportation_fee_cap, dress_code, requirements, meal_notes, recruitment_notes, manual_url, updated_at, workplaces(id, name, address), shift_slots(id, label, starts_at, ends_at, status, required_workers)").eq("project_id", projectId);
     if (jobsResult.error) throw jobsResult.error;
     const rows = (jobsResult.data ?? []) as unknown as JobRow[];
-    const jobs: DetailJobInput[] = rows.map((job) => ({ id: job.id, projectId: job.project_id, name: job.name, status: job.status, description: job.description, workplace: job.workplaces, hourlyWage: job.hourly_wage, transportationFeeCap: job.transportation_fee_cap, dressCode: job.dress_code, requirements: job.requirements, mealNotes: job.meal_notes, recruitmentNotes: job.recruitment_notes, manualUrl: job.manual_url, updatedAt: job.updated_at, shifts: job.shift_slots.map((shift) => ({ id: shift.id, label: shift.label, startsAt: shift.starts_at, endsAt: shift.ends_at, status: shift.status, requiredWorkers: shift.required_workers })) }));
+    const jobIds=rows.map(row=>row.id);
+    const empty={data:[] as unknown[],error:null};
+    const [skillRequirements,qualificationRequirements,skills,qualifications]=await Promise.all([
+      jobIds.length?supabase.from("job_skill_requirements").select("job_id,skill_id").in("job_id",jobIds):Promise.resolve(empty),
+      jobIds.length?supabase.from("job_qualification_requirements").select("job_id,qualification_id").in("job_id",jobIds):Promise.resolve(empty),
+      supabase.from("skills").select("id,code,name,is_active").order("name").order("id"),
+      supabase.from("qualifications").select("id,code,name,is_active").order("name").order("id"),
+    ]);
+    const requirementError=skillRequirements.error??qualificationRequirements.error??skills.error??qualifications.error;if(requirementError)throw requirementError;
+    const skillRows=(skills.data??[]) as MasterRow[];const qualificationRows=(qualifications.data??[]) as MasterRow[];
+    const skillLinks=(skillRequirements.data??[]) as SkillRequirementRow[];const qualificationLinks=(qualificationRequirements.data??[]) as QualificationRequirementRow[];
+    const mapMaster=(row:MasterRow)=>({id:row.id,code:row.code,name:row.name,isActive:row.is_active});
+    const jobs: DetailJobInput[] = rows.map((job) => ({ id: job.id, projectId: job.project_id, name: job.name, status: job.status, description: job.description, workplace: job.workplaces, hourlyWage: job.hourly_wage, transportationFeeCap: job.transportation_fee_cap, dressCode: job.dress_code, requirements: job.requirements, structuredRequirements:{skills:skillLinks.filter(link=>link.job_id===job.id).flatMap(link=>{const master=skillRows.find(row=>row.id===link.skill_id);return master?[mapMaster(master)]:[]}),qualifications:qualificationLinks.filter(link=>link.job_id===job.id).flatMap(link=>{const master=qualificationRows.find(row=>row.id===link.qualification_id);return master?[mapMaster(master)]:[]}),skillOptions:skillRows.filter(row=>row.is_active).map(mapMaster),qualificationOptions:qualificationRows.filter(row=>row.is_active).map(mapMaster)}, mealNotes: job.meal_notes, recruitmentNotes: job.recruitment_notes, manualUrl: job.manual_url, updatedAt: job.updated_at, shifts: job.shift_slots.map((shift) => ({ id: shift.id, label: shift.label, startsAt: shift.starts_at, endsAt: shift.ends_at, status: shift.status, requiredWorkers: shift.required_workers })) }));
     const shiftIds = jobs.flatMap((job) => job.shifts.map((shift) => shift.id));
     const activeAssignmentShiftIds: string[] = [];
     for (let index = 0; index < shiftIds.length; index += 100) {

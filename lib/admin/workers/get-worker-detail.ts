@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/auth/get-current-profile";
 import { WORKER_HISTORY_PAGE_SIZE } from "./worker-rules";
 import type { WorkerDetail, WorkerHistoryItem, WorkerStatus } from "./worker-types";
+import type { QualificationExpiryPolicy, WorkerCredentialData } from "./worker-types";
 
 type WorkerRow={id:string;staff_code:string;display_name:string;status:WorkerStatus;branch_id:string;created_at:string;updated_at:string;auth_profile_id:string|null;branches:{name:string};profiles:{is_active:boolean}|null};
 type AttendanceRow={status:string;actual_start_at:string;actual_end_at:string};
@@ -26,4 +27,22 @@ export async function getWorkerDetail(workerId:string, historyPage:number) {
     const detail:WorkerDetail={id:row.id,staffCode:row.staff_code,displayName:row.display_name,status:row.status,branchId:row.branch_id,branchName:row.branches.name,authLinked:Boolean(row.auth_profile_id),profileActive:row.profiles?.is_active??null,createdAt:row.created_at,updatedAt:row.updated_at,nextWork:future[0]??null,recentWork:past[0]??null,totalCompleted:all.filter(item=>item.assignmentStatus==="completed").length,absentCount:all.filter(item=>item.assignmentStatus==="absent").length,noShowCount:all.filter(item=>item.assignmentStatus==="no_show").length,history:all.slice(offset,offset+WORKER_HISTORY_PAGE_SIZE),historyTotal:all.length};
     return{ok:true as const,detail,canEdit:actor.status==="authenticated"&&actor.profile.account_type==="system_admin"};
   }catch(error){console.error("Failed to load admin worker detail",error);return{ok:false as const,reason:"error" as const};}
+}
+
+export async function getWorkerCredentials(workerId:string):Promise<{ok:true;data:WorkerCredentialData;canEdit:boolean}|{ok:false}> {
+  try {
+    const supabase=await createClient();
+    const [skills,qualifications,workerSkills,workerQualifications,actor]=await Promise.all([
+      supabase.from("skills").select("id,code,name,description,is_active,updated_at").order("name").order("id"),
+      supabase.from("qualifications").select("id,code,name,description,expiry_policy,is_active,updated_at").order("name").order("id"),
+      supabase.from("worker_skills").select("skill_id,acquired_on,is_active,skills!inner(code,name,is_active)").eq("worker_id",workerId),
+      supabase.from("worker_qualifications").select("qualification_id,issued_on,valid_from,expires_on,revoked_at,qualifications!inner(code,name,is_active,expiry_policy)").eq("worker_id",workerId),
+      getCurrentProfile(),
+    ]);
+    const error=skills.error??qualifications.error??workerSkills.error??workerQualifications.error;if(error)throw error;
+    const today=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+    const skillOptions=(skills.data??[]).map(row=>({id:row.id,code:row.code,name:row.name,description:row.description,isActive:row.is_active,updatedAt:row.updated_at}));
+    const qualificationOptions=(qualifications.data??[]).map(row=>({id:row.id,code:row.code,name:row.name,description:row.description,expiryPolicy:row.expiry_policy as QualificationExpiryPolicy,isActive:row.is_active,updatedAt:row.updated_at}));
+    return {ok:true,data:{skillOptions,qualificationOptions,skills:(workerSkills.data??[]).map(row=>{const master=Array.isArray(row.skills)?row.skills[0]:row.skills;return{skillId:row.skill_id,code:master.code,name:master.name,masterActive:master.is_active,acquiredOn:row.acquired_on,isActive:row.is_active}}),qualifications:(workerQualifications.data??[]).map(row=>{const master=Array.isArray(row.qualifications)?row.qualifications[0]:row.qualifications;const state=!master.is_active?"master_inactive":row.revoked_at?"revoked":row.valid_from&&row.valid_from>today?"not_yet_valid":row.expires_on&&row.expires_on<today?"expired":"valid";return{qualificationId:row.qualification_id,code:master.code,name:master.name,masterActive:master.is_active,expiryPolicy:master.expiry_policy as QualificationExpiryPolicy,issuedOn:row.issued_on,validFrom:row.valid_from,expiresOn:row.expires_on,revokedAt:row.revoked_at,state}})},canEdit:actor.status==="authenticated"&&actor.profile.account_type==="system_admin"};
+  } catch(error){console.error("Failed to load worker credentials",error);return{ok:false};}
 }
