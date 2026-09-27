@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 // @ts-expect-error Node native TypeScript test execution requires the suffix.
-import { buildShiftTimeline, compareWorkerPrimaryActions, deriveJourneyState, type WorkerJourneyFacts } from "../../lib/worker/journey/worker-journey.ts";
+import { buildShiftTimeline, compareWorkerPrimaryActions, deriveJourneyState, deriveWorkerAssignmentGroup, type WorkerJourneyFacts } from "../../lib/worker/journey/worker-journey.ts";
 
 const base: WorkerJourneyFacts = {
   assignmentId: "10000000-0000-0000-0000-000000000001", shiftId: "20000000-0000-0000-0000-000000000001",
@@ -46,4 +46,8 @@ const ordered = [
   { id: "a", startsAt: base.startsAt, timeline: buildShiftTimeline(withFact({ assignmentId: "a", generatedAt: "2026-09-27T01:16:00Z" }), []) },
 ].sort(compareWorkerPrimaryActions);
 pass("Home ordering prioritizes overdue/actionable deterministically", ordered[0].id === "a");
+pass("My Shifts marks future active Assignment upcoming", deriveWorkerAssignmentGroup({ ...base, generatedAt: "2026-09-27T00:00:00Z" }) === "upcoming");
+pass("My Shifts marks in-progress active Assignment current", deriveWorkerAssignmentGroup({ ...base, generatedAt: "2026-09-27T05:00:00Z" }) === "current");
+pass("My Shifts marks ended active Assignment past", deriveWorkerAssignmentGroup({ ...base, generatedAt: "2026-09-27T13:00:00Z" }) === "past");
+pass("My Shifts marks cancelled Assignment terminal", deriveWorkerAssignmentGroup({ ...base, assignmentStatus: "cancelled_by_company" }) === "terminal");
 console.log(`Worker Journey Rules final: ${passed}/${passed} passed`);

@@ -3,6 +3,7 @@ export type JourneyType = (typeof JOURNEY_TYPES)[number];
 export type JourneyState = "not_required" | "scheduled" | "not_open" | "actionable" | "overdue" | "completed" | "completed_late" | "missing_superseded" | "closed";
 export type JourneyActionKind = "pre_shift_confirmation" | JourneyType;
 export type JourneyActionState = "not_open" | "actionable" | "overdue";
+export type WorkerAssignmentGroup = "upcoming" | "current" | "past" | "terminal";
 
 export type WorkerJourneyFact = {
   operation: "recorded" | "voided" | null;
@@ -81,6 +82,7 @@ export type ShiftTimelineProjection = {
 };
 
 const ACTIVE_ASSIGNMENTS = new Set(["assigned", "confirmed"]);
+const TERMINAL_ASSIGNMENTS = new Set(["cancelled_by_worker", "cancelled_by_company", "absent", "no_show"]);
 const actionLabels: Record<JourneyActionKind, string> = {
   pre_shift_confirmation: "前日確認を行う",
   wake: "起床を報告する",
@@ -195,4 +197,13 @@ export function compareWorkerPrimaryActions(a: { id: string; startsAt: string; t
     || (aa.dueAt ?? "").localeCompare(ba.dueAt ?? "")
     || a.startsAt.localeCompare(b.startsAt)
     || a.id.localeCompare(b.id);
+}
+
+export function deriveWorkerAssignmentGroup(input: { assignmentStatus: string; shiftStatus: string; startsAt: string; endsAt: string; generatedAt: string }): WorkerAssignmentGroup {
+  if (TERMINAL_ASSIGNMENTS.has(input.assignmentStatus) || input.shiftStatus === "cancelled") return "terminal";
+  if (input.assignmentStatus === "completed") return "past";
+  const now = new Date(input.generatedAt).getTime();
+  if (now < new Date(input.startsAt).getTime()) return "upcoming";
+  if (now < new Date(input.endsAt).getTime()) return "current";
+  return "past";
 }
