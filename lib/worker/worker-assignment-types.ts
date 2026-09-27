@@ -2,11 +2,14 @@ import type { PreShiftConfirmationState } from "@/lib/domain/pre-shift-confirmat
 import type { HealthStatus } from "./pre-shift-confirmation-schema";
 import type { WorkerAttendanceState } from "@/lib/domain/worker-attendance";
 import type { WorkerOperationalIncident } from "./incidents/worker-incident-ui";
+import type { ShiftTimelineProjection } from "./journey/worker-journey";
 
 export type WorkerConfirmation = {
   canWork: boolean;
   healthStatus: HealthStatus;
   submittedAt: string;
+  plannedWakeAt: string | null;
+  plannedDepartureAt: string | null;
 };
 
 export type WorkerAssignment = {
@@ -37,6 +40,7 @@ export type WorkerAssignment = {
   canEndWork: boolean;
   canCreateIncident: boolean;
   incidents: WorkerOperationalIncident[];
+  timeline: ShiftTimelineProjection;
 };
 
 export type WorkerAssignmentResult =

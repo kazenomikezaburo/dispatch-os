@@ -7,6 +7,8 @@ import { ACTIVE_ASSIGNMENT_STATUSES } from "@/lib/admin/dashboard/dashboard-rule
 import type { HealthStatus } from "./pre-shift-confirmation-schema";
 import type { WorkerAssignment, WorkerAssignmentResult } from "./worker-assignment-types";
 import { getWorkerIncidentsForAssignments } from "./incidents/get-worker-incidents";
+import { getWorkerJourneyFacts } from "./journey/get-worker-journey-facts";
+import { buildShiftTimeline, compareWorkerPrimaryActions } from "./journey/worker-journey";
 
 type AssignmentRow = {
   status: string;
@@ -55,14 +57,20 @@ export async function getWorkerAssignment(profileId: string, assignmentId: strin
     if (!assignmentResult.data) return { ok: false, reason: "not_found" };
     const raw = assignmentResult.data as unknown as { id: string; status: WorkerAssignment["assignmentStatus"]; shift_slots: AssignmentRow };
     const row = { id: raw.id, ...raw.shift_slots };
-    const confirmationResult = await supabase.from("pre_shift_confirmations").select("can_work, health_status, submitted_at").eq("assignment_id", assignmentId).maybeSingle();
+    const [confirmationResult, attendanceResult, incidentsByAssignment, journeyByAssignment] = await Promise.all([
+      supabase.from("pre_shift_confirmations").select("can_work, health_status, submitted_at, planned_wake_at, planned_departure_at").eq("assignment_id", assignmentId).maybeSingle(),
+      supabase.from("attendance_events").select("event_type, server_received_at").eq("assignment_id", assignmentId).in("event_type", ["start_work", "end_work"]).order("server_received_at"),
+      getWorkerIncidentsForAssignments([assignmentId]),
+      getWorkerJourneyFacts([assignmentId]),
+    ]);
     if (confirmationResult.error) throw confirmationResult.error;
     const confirmation = confirmationResult.data ? {
       canWork: confirmationResult.data.can_work,
       healthStatus: confirmationResult.data.health_status as HealthStatus,
       submittedAt: confirmationResult.data.submitted_at,
+      plannedWakeAt: confirmationResult.data.planned_wake_at,
+      plannedDepartureAt: confirmationResult.data.planned_departure_at,
     } : null;
-    const attendanceResult = await supabase.from("attendance_events").select("event_type, server_received_at").eq("assignment_id", assignmentId).in("event_type", ["start_work", "end_work"]).order("server_received_at");
     if (attendanceResult.error) throw attendanceResult.error;
     const attendanceEvents = (attendanceResult.data ?? []).map((event): WorkerAttendanceEvent => ({
       eventType: event.event_type as WorkerAttendanceEvent["eventType"],
@@ -71,7 +79,10 @@ export async function getWorkerAssignment(profileId: string, assignmentId: strin
     const startEvent = attendanceEvents.find((event) => event.eventType === "start_work");
     const endEvent = attendanceEvents.find((event) => event.eventType === "end_work");
     const now = new Date();
-    const incidents = (await getWorkerIncidentsForAssignments([assignmentId])).get(assignmentId) ?? [];
+    const incidents = incidentsByAssignment.get(assignmentId) ?? [];
+    const journeyFacts = journeyByAssignment.get(assignmentId);
+    if (!journeyFacts) return { ok: false, reason: "not_found" };
+    const timeline = buildShiftTimeline(journeyFacts, incidents);
     const assignment: WorkerAssignment = {
       id: row.id, assignmentStatus: raw.status, shiftStatus: row.status, startsAt: row.starts_at, endsAt: row.ends_at, breakMinutes: row.break_minutes,
       projectName: row.jobs.projects.name, jobName: row.jobs.name, workplaceName: row.jobs.workplaces.name,
@@ -89,6 +100,7 @@ export async function getWorkerAssignment(profileId: string, assignmentId: strin
       canEndWork: ["assigned", "confirmed"].includes(raw.status) && getWorkerAttendanceState(attendanceEvents) === "working",
       canCreateIncident: ["assigned", "confirmed"].includes(raw.status) && row.status !== "cancelled",
       incidents,
+      timeline,
     };
     return { ok: true, assignment };
   } catch (error: unknown) {
@@ -106,7 +118,8 @@ export async function getWorkerAssignments(profileId: string): Promise<{ ok: tru
     if (result.error) throw result.error;
     const rows = (result.data ?? []) as unknown as { id: string; status: WorkerAssignment["assignmentStatus"]; shift_slots: AssignmentRow }[];
     const upcoming = rows.filter((item) => new Date(item.shift_slots.ends_at).getTime() >= Date.now()).sort((a, b) => a.shift_slots.starts_at.localeCompare(b.shift_slots.starts_at));
-    const confirmations = upcoming.length === 0 ? { data: [], error: null } : await supabase.from("pre_shift_confirmations").select("assignment_id, can_work, health_status, submitted_at").in("assignment_id", upcoming.map((item) => item.id));
+    const ids = upcoming.map((item) => item.id);
+    const confirmations = upcoming.length === 0 ? { data: [], error: null } : await supabase.from("pre_shift_confirmations").select("assignment_id, can_work, health_status, submitted_at, planned_wake_at, planned_departure_at").in("assignment_id", ids);
     if (confirmations.error) throw confirmations.error;
     const byAssignment = new Map((confirmations.data ?? []).map((item) => [item.assignment_id, item]));
     const attendance = upcoming.length === 0 ? { data: [], error: null } : await supabase.from("attendance_events").select("assignment_id, event_type, server_received_at").in("assignment_id", upcoming.map((item) => item.id)).in("event_type", ["start_work", "end_work"]).order("server_received_at");
@@ -118,18 +131,22 @@ export async function getWorkerAssignments(profileId: string): Promise<{ ok: tru
       attendanceByAssignment.set(event.assignment_id, values);
     }
     const now = new Date();
-    const incidentMap = await getWorkerIncidentsForAssignments(upcoming.map((item) => item.id));
+    const [incidentMap, journeyMap] = await Promise.all([getWorkerIncidentsForAssignments(ids), getWorkerJourneyFacts(ids)]);
     const assignments = upcoming.map((raw): WorkerAssignment => {
       const row = { id: raw.id, ...raw.shift_slots };
       const value = byAssignment.get(row.id);
-      const confirmation = value ? { canWork: value.can_work, healthStatus: value.health_status as HealthStatus, submittedAt: value.submitted_at } : null;
+      const confirmation = value ? { canWork: value.can_work, healthStatus: value.health_status as HealthStatus, submittedAt: value.submitted_at, plannedWakeAt: value.planned_wake_at, plannedDepartureAt: value.planned_departure_at } : null;
       const attendanceEvents = attendanceByAssignment.get(row.id) ?? [];
       const startEvent = attendanceEvents.find((event) => event.eventType === "start_work");
       const endEvent = attendanceEvents.find((event) => event.eventType === "end_work");
       const attendanceState = getWorkerAttendanceState(attendanceEvents);
       const activeForAttendance = ["assigned", "confirmed"].includes(raw.status);
-      return { id: row.id, assignmentStatus: raw.status, shiftStatus: row.status, startsAt: row.starts_at, endsAt: row.ends_at, breakMinutes: row.break_minutes, projectName: row.jobs.projects.name, jobName: row.jobs.name, workplaceName: row.jobs.workplaces.name, description: row.jobs.description, hourlyWage: row.jobs.hourly_wage, transportationFeeCap: row.jobs.transportation_fee_cap, dressCode: row.jobs.dress_code, requirements: row.jobs.requirements, mealNotes: row.jobs.meal_notes, recruitmentNotes: row.jobs.recruitment_notes, manualUrl: row.jobs.manual_url, hasStarted: now.getTime() >= new Date(row.starts_at).getTime(), confirmationState: getPreShiftConfirmationState({ startsAt: row.starts_at, hasConfirmation: Boolean(confirmation), now }), confirmation, attendanceState, startWorkAt: startEvent?.serverReceivedAt ?? null, endWorkAt: endEvent?.serverReceivedAt ?? null, canStartWork: activeForAttendance && attendanceState === "not_started" && now.getTime() >= new Date(row.starts_at).getTime() - 60 * 60 * 1000 && now.getTime() < new Date(row.ends_at).getTime(), canEndWork: activeForAttendance && attendanceState === "working", canCreateIncident: activeForAttendance && row.status !== "cancelled", incidents: incidentMap.get(row.id) ?? [] };
+      const facts = journeyMap.get(row.id);
+      if (!facts) throw new Error("Worker journey projection unavailable");
+      const incidents = incidentMap.get(row.id) ?? [];
+      return { id: row.id, assignmentStatus: raw.status, shiftStatus: row.status, startsAt: row.starts_at, endsAt: row.ends_at, breakMinutes: row.break_minutes, projectName: row.jobs.projects.name, jobName: row.jobs.name, workplaceName: row.jobs.workplaces.name, description: row.jobs.description, hourlyWage: row.jobs.hourly_wage, transportationFeeCap: row.jobs.transportation_fee_cap, dressCode: row.jobs.dress_code, requirements: row.jobs.requirements, mealNotes: row.jobs.meal_notes, recruitmentNotes: row.jobs.recruitment_notes, manualUrl: row.jobs.manual_url, hasStarted: now.getTime() >= new Date(row.starts_at).getTime(), confirmationState: getPreShiftConfirmationState({ startsAt: row.starts_at, hasConfirmation: Boolean(confirmation), now }), confirmation, attendanceState, startWorkAt: startEvent?.serverReceivedAt ?? null, endWorkAt: endEvent?.serverReceivedAt ?? null, canStartWork: activeForAttendance && attendanceState === "not_started" && now.getTime() >= new Date(row.starts_at).getTime() - 60 * 60 * 1000 && now.getTime() < new Date(row.ends_at).getTime(), canEndWork: activeForAttendance && attendanceState === "working", canCreateIncident: activeForAttendance && row.status !== "cancelled", incidents, timeline: buildShiftTimeline(facts, incidents) };
     });
+    assignments.sort((a, b) => compareWorkerPrimaryActions({ id: a.id, startsAt: a.startsAt, timeline: a.timeline }, { id: b.id, startsAt: b.startsAt, timeline: b.timeline }));
     return { ok: true, assignments };
   } catch (error: unknown) {
     console.error("Failed to load worker assignments", error);
