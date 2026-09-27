@@ -85,9 +85,9 @@ function setup() {
     let ends = "clock_timestamp() + interval '12 hours'";
     let meeting = "clock_timestamp() + interval '1 hour'";
     let status = "confirmed";
-    if (name === "arrivalBefore") meeting = "clock_timestamp() + interval '4 hours'";
+    if (name === "arrivalBefore") meeting = "clock_timestamp() + interval '3 hours 59 minutes'";
     if (name === "arrivalLate" || name === "adminVoid") meeting = "clock_timestamp() - interval '1 minute'";
-    if (name === "ended") { starts = "clock_timestamp() - interval '5 hours'"; ends = "clock_timestamp() - interval '1 minute'"; meeting = "clock_timestamp() - interval '5 hours'"; }
+    if (name === "ended") { starts = "clock_timestamp() - interval '5 hours'"; ends = "clock_timestamp() - interval '1 minute'"; meeting = "clock_timestamp() - interval '5 hours 1 minute'"; }
     if (name === "cancelled") status = "cancelled";
     if (name === "started") { starts = "clock_timestamp() - interval '30 minutes'"; meeting = "clock_timestamp() - interval '1 hour'"; }
     if (name === "arrivalBeforeWork") { starts = "clock_timestamp() + interval '30 minutes'"; meeting = "clock_timestamp() - interval '10 minutes'"; }
@@ -112,7 +112,9 @@ function setup() {
   sql(`begin;
     insert into public.shift_slots(id,job_id,label,starts_at,ends_at,meeting_at,required_workers,status) values ${values};
     insert into public.assignments(id,shift_slot_id,worker_id,source,status) values ${assignments};
+    set local session_replication_role = replica;
     insert into public.pre_shift_confirmations(id,assignment_id,can_work,health_status,planned_wake_at,planned_departure_at) values ${confirmations};
+    set local session_replication_role = origin;
     insert into public.attendance_events(assignment_id,event_type,server_received_at,source)
       values ('${assignment.started}','start_work',clock_timestamp(),'worker');
   commit;`);
