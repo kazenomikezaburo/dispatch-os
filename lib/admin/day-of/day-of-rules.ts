@@ -2,6 +2,7 @@
 import { deriveAdminAttendance } from "../attendance/attendance-rules.ts";
 // @ts-expect-error Node's native TypeScript loader requires the explicit suffix.
 import { addDays, isShiftDate, tokyoDate } from "../shifts/shift-view-rules.ts";
+import type { AdminJourneyAttention } from "../journey/get-admin-journey-attention.ts";
 
 export type DayOfFilter = "all" | "attention" | "scheduled" | "working" | "finished";
 export type DayOfQuery = { date:string; q:string; project:string; shift:string; state:DayOfFilter; assignment:string };
@@ -12,6 +13,7 @@ export type DayOfInput = {
   preShift:null|{canWork:boolean;submittedAt:string}; placements:{position:string;startAt:string;endAt:string}[];
   breaks:{startAt:string;endAt:string}[]; attendanceConfirmed:boolean;
   incidentAttention:null|{id:string;state:"open"|"acknowledged";category:string;createdAt:string};
+  journeyAttention:AdminJourneyAttention[];
 };
 export type DayOfItem = DayOfInput & ReturnType<typeof deriveAdminAttendance> & { attentionReason:string|null };
 
@@ -24,7 +26,8 @@ export function dayOfRange(date:string){return {start:new Date(`${date}T00:00:00
 export function dayOfHref(query:DayOfQuery,patch:Partial<DayOfQuery>={},basePath="/admin/day-of"){const next={...query,...patch};const p=new URLSearchParams({date:next.date});if(next.q)p.set("q",next.q);if(next.project)p.set("project",next.project);if(next.shift)p.set("shift",next.shift);if(next.state!=="all")p.set("state",next.state);if(next.assignment)p.set("assignment",next.assignment);return `${basePath}?${p}`;}
 export function buildDayOfItems(inputs:DayOfInput[],query:DayOfQuery,now=new Date()):DayOfItem[]{
   const items=inputs.map((input)=>{const attendance=deriveAdminAttendance({id:input.assignmentId,shiftId:input.shiftId,status:input.assignmentStatus,workerName:input.workerName,startsAt:input.startsAt,endsAt:input.endsAt,projectName:input.projectName,jobName:input.jobName,workplaceName:input.workplaceName,startWorkAt:input.startWorkAt,endWorkAt:input.endWorkAt},now,input.attendanceConfirmed?"confirmed":"unconfirmed");
-    const attentionReason=attendance.state==="no_show"?"無断欠勤":attendance.state==="absent"?"欠勤":attendance.state==="start_missing"?"開始未報告":attendance.lateMinutes>0?`開始 ${attendance.lateMinutes}分遅れ`:attendance.earlyLeaveMinutes>0?`予定より ${attendance.earlyLeaveMinutes}分早く終了`:input.preShift?.canWork===false?"前日確認で勤務不可":null;
+    const journeyReason=input.journeyAttention.slice().sort((a,b)=>journeyRank(a.type)-journeyRank(b.type)).map(item=>`${journeyLabel(item.type)} ${item.overdueMinutes}分超過`).join(" / ");
+    const attentionReason=attendance.state==="no_show"?"無断欠勤":attendance.state==="absent"?"欠勤":journeyReason?journeyReason:attendance.state==="start_missing"?"開始未報告":attendance.lateMinutes>0?`開始 ${attendance.lateMinutes}分遅れ`:attendance.earlyLeaveMinutes>0?`予定より ${attendance.earlyLeaveMinutes}分早く終了`:input.preShift?.canWork===false?"前日確認で勤務不可":null;
     return {...input,...attendance,attentionReason};});
   const needle=query.q.toLocaleLowerCase("ja"); const matchState=(item:DayOfItem)=>query.state==="all"||(query.state==="attention"?Boolean(item.attentionReason||item.incidentAttention):query.state==="scheduled"?(item.state==="scheduled"||item.state==="start_missing"):item.state===query.state);
   const priority=(item:DayOfItem)=>item.incidentAttention?.state==="open"?1:item.state==="no_show"?2:item.state==="absent"?3:item.state==="start_missing"?4:item.incidentAttention?.state==="acknowledged"?5:item.lateMinutes>0?6:item.earlyLeaveMinutes>0?7:item.preShift?.canWork===false?8:9;
@@ -33,3 +36,5 @@ export function buildDayOfItems(inputs:DayOfInput[],query:DayOfQuery,now=new Dat
 export function operationalLabel(item:Pick<DayOfItem,"state"|"lateMinutes">){if(item.state==="scheduled")return"勤務前";if(item.state==="start_missing")return"開始未報告";if(item.state==="working")return item.lateMinutes>0?`勤務中（開始 ${item.lateMinutes}分遅れ）`:"勤務中";if(item.state==="finished")return"勤務終了";if(item.state==="absent")return"欠勤";return"無断欠勤";}
 export function placementLabel(item:Pick<DayOfItem,"placements">,date:string,now=new Date()){const current=item.placements.find(s=>Date.parse(s.startAt)<=now.getTime()&&now.getTime()<Date.parse(s.endAt));return {prefix:date===tokyoDate(now)&&current?"現在配置":"配置",value:current?.position??item.placements[0]?.position??null};}
 export function plannedBreakLabel(item:Pick<DayOfItem,"breaks">,date:string,now=new Date()){const current=item.breaks.find(b=>Date.parse(b.startAt)<=now.getTime()&&now.getTime()<Date.parse(b.endAt));return date===tokyoDate(now)&&current?"予定休憩中":"予定休憩";}
+export function journeyLabel(type:AdminJourneyAttention["type"]){return type==="wake_overdue"?"起床":type==="departure_overdue"?"出発":"到着";}
+function journeyRank(type:AdminJourneyAttention["type"]){return type==="arrival_overdue"?0:type==="departure_overdue"?1:2;}

@@ -6,7 +6,7 @@ import { useRef, useState, useTransition } from "react";
 import { sendAttentionReminder, sendAttentionReminders, type AttentionReminderOutcome, type AttentionReminderResult } from "@/app/actions/attention-reminders";
 import type { AttentionItem } from "@/lib/admin/attention/attention-types";
 
-const typeLabel:Record<AttentionItem["type"],string>={staffing_shortage:"人員",placement_conflict:"Coverage",pre_confirmation_overdue:"前日確認",day_of_arrival:"当日",open_sos:"SOS",attendance_needs_review:"勤怠"};
+const typeLabel:Record<AttentionItem["type"],string>={staffing_shortage:"人員",placement_conflict:"Coverage",pre_confirmation_overdue:"前日確認",wake_overdue:"起床",departure_overdue:"出発",arrival_overdue:"到着",day_of_arrival:"当日",open_sos:"SOS",attendance_needs_review:"勤怠"};
 const severityLabel={critical:"緊急",high:"高",medium:"中"} as const;
 const severityClass={critical:"bg-danger-subtle text-danger",high:"bg-warning-subtle text-warning-foreground",medium:"bg-info-subtle text-info-foreground"} as const;
 const outcomeLabel:Record<AttentionReminderOutcome,string>={projected:"通知を作成",not_eligible:"対象外",no_recipient:"通知先なし",inactive_recipient:"通知先なし",rate_limited:"再通知間隔内",unavailable:"対象を確認できません"};

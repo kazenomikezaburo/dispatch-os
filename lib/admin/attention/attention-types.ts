@@ -2,6 +2,9 @@ export type AttentionType =
   | "staffing_shortage"
   | "placement_conflict"
   | "pre_confirmation_overdue"
+  | "wake_overdue"
+  | "departure_overdue"
+  | "arrival_overdue"
   | "day_of_arrival"
   | "open_sos"
   | "attendance_needs_review";
@@ -29,6 +32,7 @@ export type AttentionItem = AttentionBase & (
   | { type: "staffing_shortage"; reason: "unassigned" | "shortage" }
   | { type: "placement_conflict"; reason: "coverage_shortage" }
   | { type: "pre_confirmation_overdue"; reason: "pending" }
+  | { type: "wake_overdue" | "departure_overdue" | "arrival_overdue"; reason: "overdue"; plannedAt: string; overdueMinutes: number; currentJourneyState: "overdue" }
   | { type: "day_of_arrival"; reason: "no_show" | "start_missing" | "late" }
   | { type: "open_sos"; reason: "open" }
   | { type: "attendance_needs_review"; reason: "unconfirmed" }
@@ -49,4 +53,3 @@ export type AttentionData = {
 };
 
 export type AttentionResult = { ok: true; data: AttentionData } | { ok: false };
-
