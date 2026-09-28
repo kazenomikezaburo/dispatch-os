@@ -13,6 +13,9 @@ const typeLabels = {
   incident_resolved: "解決済み",
   announcement_published: "お知らせ",
   pre_confirmation_reminder: "勤務前確認",
+  wake_reminder: "起床確認",
+  departure_reminder: "出発確認",
+  arrival_reminder: "到着確認",
 } as const;
 const date = new Intl.DateTimeFormat("ja-JP", {
   timeZone: "Asia/Tokyo",

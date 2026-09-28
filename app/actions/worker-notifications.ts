@@ -47,11 +47,17 @@ export async function openWorkerNotification(notificationId: string) {
   const notificationType = notification.data.notification_type;
   const isAnnouncement = notificationType === "announcement_published";
   const isReminder = notificationType === "pre_confirmation_reminder";
+  const isJourneyReminder =
+    notificationType === "wake_reminder" ||
+    notificationType === "departure_reminder" ||
+    notificationType === "arrival_reminder";
   const resolver = isAnnouncement
     ? "resolve_announcement_notification_source_context"
     : isReminder
       ? "resolve_pre_confirmation_reminder_source_context"
-      : "resolve_in_app_notification_source_context";
+      : isJourneyReminder
+          ? "resolve_worker_journey_reminder_source_context"
+          : "resolve_in_app_notification_source_context";
   const source = await supabase.rpc(resolver, {
     p_notification_id: id.data,
   });

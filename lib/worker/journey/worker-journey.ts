@@ -1,5 +1,10 @@
 export const JOURNEY_TYPES = ["wake", "departure", "arrival"] as const;
 export type JourneyType = (typeof JOURNEY_TYPES)[number];
+export const JOURNEY_TIMING_POLICY = {
+  wake: { openMs: 6 * 60 * 60 * 1000, overdueMs: 15 * 60 * 1000 },
+  departure: { openMs: 2 * 60 * 60 * 1000, overdueMs: 10 * 60 * 1000 },
+  arrival: { openMs: 3 * 60 * 60 * 1000, overdueMs: 5 * 60 * 1000 },
+} as const satisfies Record<JourneyType, { openMs: number; overdueMs: number }>;
 export type JourneyState = "not_required" | "scheduled" | "not_open" | "actionable" | "overdue" | "completed" | "completed_late" | "missing_superseded" | "closed";
 export type JourneyActionKind = "pre_shift_confirmation" | JourneyType;
 export type JourneyActionState = "not_open" | "actionable" | "overdue";
@@ -114,9 +119,10 @@ function confirmationOpenAt(startsAt: string) {
 }
 
 function scheduleFor(facts: WorkerJourneyFacts, type: JourneyType) {
-  if (type === "wake") return facts.plannedWakeAt ? { dueAt: facts.plannedWakeAt, openMs: 6 * 60 * 60 * 1000, overdueMs: 15 * 60 * 1000 } : null;
-  if (type === "departure") return facts.plannedDepartureAt ? { dueAt: facts.plannedDepartureAt, openMs: 2 * 60 * 60 * 1000, overdueMs: 10 * 60 * 1000 } : null;
-  return { dueAt: facts.arrivalTarget, openMs: 3 * 60 * 60 * 1000, overdueMs: 5 * 60 * 1000 };
+  const policy = JOURNEY_TIMING_POLICY[type];
+  if (type === "wake") return facts.plannedWakeAt ? { dueAt: facts.plannedWakeAt, ...policy } : null;
+  if (type === "departure") return facts.plannedDepartureAt ? { dueAt: facts.plannedDepartureAt, ...policy } : null;
+  return { dueAt: facts.arrivalTarget, ...policy };
 }
 
 export function deriveJourneyState(facts: WorkerJourneyFacts, type: JourneyType): WorkerJourneyCurrentState {
