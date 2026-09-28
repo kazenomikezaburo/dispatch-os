@@ -8,6 +8,7 @@ import { ACTIVE_ASSIGNMENT_STATUSES, getStaffingState } from "@/lib/admin/shifts
 import { addDays, tokyoDate } from "@/lib/admin/shifts/shift-view-rules";
 import { readAllPages } from "@/lib/admin/shifts/read-all-pages";
 import { getPreShiftConfirmationOpenAt, getPreShiftConfirmationState } from "@/lib/domain/pre-shift-confirmation";
+import { getAdminJourneyAttention } from "@/lib/admin/journey/get-admin-journey-attention";
 import { buildAttentionData, type AttentionSources, type PlacementAttentionSource } from "./attention-rules";
 import type { AttentionResult } from "./attention-types";
 
@@ -47,11 +48,12 @@ export async function getAdminAttention(now = new Date()): Promise<AttentionResu
     }
     const assignmentIds=assignments.map(row=>row.id);
     const shiftIds=shifts.map(row=>row.id);
-    const [events,records,incidents,plans]=await Promise.all([
+    const [events,records,incidents,plans,journeys]=await Promise.all([
       readBatched<EventRow>(assignmentIds,ids=>supabase.from("attendance_events").select("assignment_id,event_type,server_received_at").in("assignment_id",ids).in("event_type",["start_work","end_work"]).order("server_received_at")),
       readBatched<AttendanceRecordRow>(assignmentIds,ids=>supabase.from("attendance_records").select("assignment_id,actual_start_at").in("assignment_id",ids)),
       readBatched<IncidentRow>(assignmentIds,ids=>supabase.from("operational_incidents").select("id,assignment_id,state,created_at").in("assignment_id",ids).eq("state","open").order("created_at")),
       readBatched<PlanRow>(shiftIds,ids=>supabase.from("shift_placement_plans").select("id,shift_slot_id,version").in("shift_slot_id",ids)),
+      getAdminJourneyAttention(supabase,window.from,window.to),
     ]);
     const planIds=plans.map(plan=>plan.id);
     const [positions,segments,breaks]=await Promise.all([
@@ -68,6 +70,7 @@ export async function getAdminAttention(now = new Date()): Promise<AttentionResu
     const recordByAssignment=new Map(records.map(record=>[record.assignment_id,record]));
 
     const sources:AttentionSources=emptySources();
+    sources.journeys=journeys;
     sources.staffing=shifts.map(shift=>{const assignedWorkers=activeByShift.get(shift.id)?.length??0;return{shiftId:shift.id,projectId:shift.jobs.projects.id,projectName:shift.jobs.projects.name,jobName:shift.jobs.name,workplaceName:shift.jobs.workplaces.name,startsAt:shift.starts_at,requiredWorkers:shift.required_workers,assignedWorkers,staffingState:getStaffingState(shift.required_workers,assignedWorkers)};});
     for(const assignment of assignments){
       const shift=shiftById.get(assignment.shift_slot_id);if(!shift)continue;const event=eventMap.get(assignment.id);const attendance=deriveAdminAttendance({id:assignment.id,shiftId:shift.id,status:assignment.status,workerName:assignment.workers.display_name,startsAt:shift.starts_at,endsAt:shift.ends_at,projectName:shift.jobs.projects.name,jobName:shift.jobs.name,workplaceName:shift.jobs.workplaces.name,startWorkAt:event?.start??null,endWorkAt:event?.end??null},now,confirmedAssignments.has(assignment.id)?"confirmed":"unconfirmed");
@@ -92,6 +95,6 @@ function buildPlacementSources(plans:PlanRow[],positions:PositionRow[],segments:
   return result;
 }
 
-function emptySources():AttentionSources{return{staffing:[],placement:[],preConfirmations:[],dayOf:[],incidents:[],attendanceReviews:[]};}
+function emptySources():AttentionSources{return{staffing:[],placement:[],preConfirmations:[],journeys:[],dayOf:[],incidents:[],attendanceReviews:[]};}
 function chunks<T>(values:T[],size=100){return Array.from({length:Math.ceil(values.length/size)},(_,index)=>values.slice(index*size,(index+1)*size));}
 async function readBatched<T>(ids:string[],query:(ids:string[])=>PromiseLike<{data:T[]|null;error:unknown}>):Promise<T[]>{const rows:T[]=[];for(const batch of chunks(ids)){if(!batch.length)continue;const result=await query(batch);if(result.error)throw result.error;rows.push(...(result.data??[]));}return rows;}

@@ -1,4 +1,5 @@
 import type { AttentionData, AttentionItem, AttentionSummary } from "./attention-types.ts";
+import type { AdminJourneyAttention } from "../journey/get-admin-journey-attention.ts";
 
 export type StaffingAttentionSource = {
   shiftId: string; projectId: string; projectName: string; jobName: string; workplaceName: string;
@@ -30,6 +31,7 @@ export type AttentionSources = {
   staffing: StaffingAttentionSource[];
   placement: PlacementAttentionSource[];
   preConfirmations: PreConfirmationAttentionSource[];
+  journeys: AdminJourneyAttention[];
   dayOf: DayOfAttentionSource[];
   incidents: SosAttentionSource[];
   attendanceReviews: AttendanceReviewSource[];
@@ -38,11 +40,14 @@ export type AttentionSources = {
 const severityRank = { critical: 0, high: 1, medium: 2 } as const;
 const typeRank: Record<AttentionItem["type"], number> = {
   open_sos: 0,
-  day_of_arrival: 1,
-  staffing_shortage: 2,
-  placement_conflict: 3,
-  pre_confirmation_overdue: 4,
-  attendance_needs_review: 5,
+  arrival_overdue: 1,
+  departure_overdue: 2,
+  wake_overdue: 3,
+  day_of_arrival: 4,
+  staffing_shortage: 5,
+  placement_conflict: 6,
+  pre_confirmation_overdue: 7,
+  attendance_needs_review: 8,
 };
 const encode = encodeURIComponent;
 
@@ -52,6 +57,11 @@ export function buildAttentionData(sources: AttentionSources, window: AttentionD
   for (const source of sources.incidents) {
     if (source.state !== "open") continue;
     items.push({ id:`open_sos:${source.incidentId}`,type:"open_sos",reason:"open",severity:"critical",shiftId:source.shiftId,assignmentId:source.assignmentId,projectId:source.projectId,projectName:source.projectName,target:`${source.projectName} / ${source.workplaceName}`,title:`${source.workerName}さんからSOSがあります`,description:"現場から支援要請",startsAt:source.startsAt,occurredAt:source.createdAt,destination:`/admin/incidents?state=unresolved&incident=${encode(source.incidentId)}`,actionLabel:"対応する" });
+  }
+  for (const source of sources.journeys) {
+    const label = source.type === "wake_overdue" ? "起床" : source.type === "departure_overdue" ? "出発" : "到着";
+    const severity = source.type === "arrival_overdue" || (source.type === "departure_overdue" && Date.parse(source.generatedAt) >= Date.parse(source.arrivalTarget)) ? "critical" : "high";
+    items.push({ id:`${source.type}:${source.assignmentId}`,type:source.type,reason:"overdue",severity,shiftId:source.shiftId,assignmentId:source.assignmentId,projectId:source.projectId,projectName:source.projectName,target:`${source.workerName} / ${source.projectName}`,title:`${source.workerName}さんの${label}報告がありません`,description:`${source.workplaceName} / ${label}予定から${source.overdueMinutes}分超過`,startsAt:source.startsAt,occurredAt:source.targetAt,plannedAt:source.targetAt,overdueMinutes:source.overdueMinutes,currentJourneyState:"overdue",destination:`/admin/shifts/${encode(source.shiftId)}?tab=confirmation&phase=day&assignmentId=${encode(source.assignmentId)}`,actionLabel:"当日状況を見る" });
   }
   for (const source of sources.dayOf) {
     const reason = source.state === "no_show" ? "no_show" : source.state === "start_missing" ? "start_missing" : source.lateMinutes > 0 ? "late" : null;
@@ -95,7 +105,7 @@ export function summarizeAttention(items: AttentionItem[]): AttentionSummary {
     urgent: items.filter((item) => item.type === "open_sos").length,
     staffing: items.filter((item) => item.type === "staffing_shortage" || item.type === "placement_conflict").length,
     confirmation: items.filter((item) => item.type === "pre_confirmation_overdue" || item.type === "attendance_needs_review").length,
-    dayOf: items.filter((item) => item.type === "day_of_arrival").length,
+    dayOf: items.filter((item) => item.type === "day_of_arrival" || item.type === "wake_overdue" || item.type === "departure_overdue" || item.type === "arrival_overdue").length,
   };
 }
 

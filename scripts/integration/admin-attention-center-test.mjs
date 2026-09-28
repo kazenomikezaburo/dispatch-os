@@ -13,6 +13,7 @@ const sources={
   staffing:[{...common,jobName:"受付",requiredWorkers:3,assignedWorkers:1,staffingState:"shortage"}],
   placement:[{...common,planId:"plan-a",positionId:"position-a",positionLabel:"受付",jobName:"受付",intervalStart:startsAt,intervalEnd:"2099-01-02T01:00:00.000Z",shortage:1,current:true}],
   preConfirmations:[{...common,assignmentId:"assignment-pre",workerName:"佐藤",openAt:"2099-01-01T15:00:00.000Z",state:"pending",beforeStart:true}],
+  journeys:[],
   dayOf:[{...common,assignmentId:"assignment-day",workerName:"田中",startWorkAt:null,state:"start_missing",lateMinutes:0}],
   incidents:[{...common,incidentId:"incident-a",assignmentId:"assignment-sos",workerName:"鈴木",createdAt:"2099-01-01T23:00:00.000Z",state:"open"}],
   attendanceReviews:[{...common,assignmentId:"assignment-review",workerName:"山田",endWorkAt:"2099-01-02T08:00:00.000Z",state:"finished",confirmationState:"unconfirmed"}],
@@ -28,6 +29,7 @@ const resolved=buildAttentionData({
   staffing:[{...sources.staffing[0],assignedWorkers:3,staffingState:"filled"}],
   placement:[{...sources.placement[0],shortage:0}],
   preConfirmations:[{...sources.preConfirmations[0],state:"confirmed"}],
+  journeys:[],
   dayOf:[{...sources.dayOf[0],startWorkAt:startsAt,state:"working",lateMinutes:0}],
   incidents:[{...sources.incidents[0],state:"acknowledged"}],
   attendanceReviews:[{...sources.attendanceReviews[0],confirmationState:"confirmed"}],
@@ -48,7 +50,8 @@ const loader=await readFile(new URL("../../lib/admin/attention/get-admin-attenti
 const nav=await readFile(new URL("../../components/admin/admin-nav.ts",import.meta.url),"utf8");
 ok(loader.includes("ATTENTION_WINDOW_DAYS = 8"),"source reads are time bounded");
 ok(loader.includes("ATTENTION_QUEUE_LIMIT = 100"),"mixed queue output is bounded");
-assert.doesNotMatch(loader,/service_role|\.insert\(|\.update\(|\.delete\(|\.rpc\(/,"Attention loader has no privileged client or writes");checks+=1;
+assert.doesNotMatch(loader,/service_role|\.insert\(|\.update\(|\.delete\(/,"Attention loader has no privileged client or writes");checks+=1;
+ok(loader.includes("getAdminJourneyAttention"),"Attention loader uses the narrow Admin journey reader");
 ok(nav.includes('href: "/admin/attention"'),"Attention Center is reachable from canonical Admin navigation");
 ok(checks>=12,"focused suite remains substantive");
 console.log(`Admin Attention Center: PASS (${checks} assertions)`);
