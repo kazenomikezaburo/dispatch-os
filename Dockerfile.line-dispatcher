@@ -1,0 +1,18 @@
+FROM node:22-bookworm-slim AS build
+
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY tsconfig.json ./
+COPY lib ./lib
+COPY scripts/build-line-dispatcher.mjs ./scripts/build-line-dispatcher.mjs
+COPY scripts/line-delivery-dispatcher.ts ./scripts/line-delivery-dispatcher.ts
+RUN npm run build:line-dispatcher
+
+FROM node:22-bookworm-slim AS runtime
+
+ENV NODE_ENV=production
+WORKDIR /app
+COPY --from=build --chown=node:node /app/dist/line-delivery-dispatcher.cjs ./line-delivery-dispatcher.cjs
+USER node
+CMD ["node", "line-delivery-dispatcher.cjs"]
