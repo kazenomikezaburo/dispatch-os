@@ -1,4 +1,5 @@
 import { WorkerNotificationInbox } from "@/components/worker/notifications/worker-notification-inbox";
+import Link from "next/link";
 import { requireWorker } from "@/lib/auth/require-worker";
 import { getWorkerNotifications } from "@/lib/worker/notifications/get-worker-notifications";
 
@@ -11,5 +12,5 @@ export default async function WorkerNotificationsPage() {
     console.error("Failed to load worker notifications", error);
   }
   if (!result) return <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6"><section role="alert" className="rounded-card border border-danger/25 bg-surface p-5"><h1 className="font-semibold">通知を取得できませんでした。</h1><p className="mt-1 text-sm text-foreground-secondary">時間をおいて再度お試しください。</p></section></main>;
-  return <main className="mx-auto max-w-3xl px-4 py-7 sm:px-6 sm:py-10"><header><p className="text-sm font-semibold text-link">対応状況とお知らせ</p><h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">通知</h1><p className="mt-2 text-sm text-foreground-secondary">勤務前確認、Help Requestの対応状況、管理者からのお知らせを確認できます。</p></header><WorkerNotificationInbox initialNotifications={result.notifications} initialCursor={result.nextCursor} /></main>;
+  return <main className="mx-auto max-w-3xl px-4 py-7 sm:px-6 sm:py-10"><header><div className="flex flex-wrap items-start justify-between gap-3"><div><p className="text-sm font-semibold text-link">対応状況とお知らせ</p><h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">通知</h1></div><Link href="/worker/settings/line" className="inline-flex min-h-11 items-center rounded-control border border-border-strong bg-surface px-4 text-sm font-semibold hover:bg-surface-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring">LINE通知設定</Link></div><p className="mt-2 text-sm text-foreground-secondary">勤務前確認、Help Requestの対応状況、管理者からのお知らせを確認できます。</p></header><WorkerNotificationInbox initialNotifications={result.notifications} initialCursor={result.nextCursor} /></main>;
 }

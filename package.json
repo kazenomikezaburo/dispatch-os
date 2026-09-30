@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:line-dispatcher": "node scripts/build-line-dispatcher.mjs",
+    "cdk:synth": "cdk synth --app \"npx tsx infra/bin/opscue-line-delivery.ts\"",
     "start": "next start",
     "lint": "eslint"
   },
@@ -15,10 +17,12 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "lucide-react": "^1.32.0",
-    "next": "16.3.1",
+    "next": "16.3.7",
+    "postgres": "^3.4.9",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-hook-form": "^7.85.0",
+    "server-only": "^0.0.1",
     "tailwind-merge": "^3.6.0",
     "zod": "^4.4.3"
   },
@@ -27,10 +31,15 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "aws-cdk": "^2.1143.0",
+    "aws-cdk-lib": "^2.271.0",
+    "constructs": "^10.8.1",
+    "esbuild": "^0.28.2",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "supabase": "^2.115.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

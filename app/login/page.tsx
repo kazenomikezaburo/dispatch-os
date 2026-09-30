@@ -17,6 +17,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <p className="mt-2 text-sm text-slate-600">アカウント情報を入力してログインしてください</p>
         {params.error === "invalid_credentials" && <p className="mt-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">メールアドレスまたはパスワードが正しくありません。</p>}
         {params.reason === "session_expired" && <p className="mt-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">セッションの有効期限が切れました。もう一度ログインしてください。</p>}
+        {params.reason === "line_session_required" && <p className="mt-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">LINE連携中にログイン状態を確認できませんでした。ログイン後、LINE連携を最初からやり直してください。</p>}
         <form action={login} className="mt-6 space-y-5">
           <div><label htmlFor="email" className="text-sm font-medium text-slate-700">メールアドレス</label><input id="email" name="email" type="email" autoComplete="email" required className="mt-2 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" /></div>
           <div><label htmlFor="password" className="text-sm font-medium text-slate-700">パスワード</label><input id="password" name="password" type="password" autoComplete="current-password" required className="mt-2 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" /></div>

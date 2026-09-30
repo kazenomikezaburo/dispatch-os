@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/auth/get-current-profile";
+import { consumeOwnNotificationContinuation } from "@/lib/line/notification-continuation";
 import { createClient } from "@/lib/supabase/server";
 
 export async function login(formData: FormData): Promise<never> {
@@ -16,6 +17,10 @@ export async function login(formData: FormData): Promise<never> {
   const result = await getCurrentProfile();
   if (result.status === "inactive") redirect("/auth/error?reason=inactive");
   if (result.status !== "authenticated") redirect("/auth/error");
+  if (result.profile.account_type === "worker") {
+    const continuation = await consumeOwnNotificationContinuation();
+    if (continuation) redirect(continuation);
+  }
   redirect(result.profile.account_type === "worker" ? "/worker" : "/admin");
 }
 
