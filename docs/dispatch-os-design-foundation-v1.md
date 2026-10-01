@@ -1,8 +1,8 @@
-# Dispatch OS Design Foundation v1.0
+# OpsCue Design Foundation v1.0
 
 ## 1. Purpose
 
-本書はDispatch OSのVisual Source of Truthである。UI/IAの正本である画面構成台帳 v2.1、画面構成Markdown v2.1、Figma、既存UI Patternを変更せず、今後の画面が同じ視覚言語で実装されるための基盤を定義する。
+本書はOpsCueのVisual Source of Truthである。UI/IAの正本である画面構成台帳 v2.1、画面構成Markdown v2.1、Figma、既存UI Patternを変更せず、今後の画面が同じ視覚言語で実装されるための基盤を定義する。
 
 優先順位は、UI/IA＝台帳・Markdown・Figma、Visual＝本書、Security＝DB・GRANT・RLS・Domain Ruleとする。Reference Libraryは判断材料であり正本ではない。
 
@@ -19,7 +19,7 @@
 
 `docs/ui_reference/**`内の各Referenceについて、DESIGN、tokens、variables、themeを確認した。名称が同じtokenでも意味と値が異なるため直接mergeしない。
 
-| Reference | Strength | Weakness for Dispatch OS | Dispatch OS Adoption |
+| Reference | Strength | Weakness for OpsCue | OpsCue Adoption |
 | --- | --- | --- | --- |
 | Cal.com | monochrome、明確なCTA階層、compact control、1200px container | marketing scale、pill CTA、shadow中心のcard、custom font | near-black CTA、neutral canvas、compact densityを採用。pill buttonとfontは不採用 |
 | Linear | 精密なspacing、6px control、hairline border、低いfont weight、minimal shadow | dark theme、acid-lime、0.5px border、開発者向けの極端な密度 | border-first、限定radius、抑制したweightを採用。dark/accent/fontは不採用 |

@@ -40,7 +40,7 @@ async function transitionAdminIncident(command: "acknowledge" | "resolve", input
         console.error(`Failed to project ${command} incident notification`, projectionError);
       }
     } else console.error(`Failed to project ${command} incident notification`, "Missing source event ID");
-    revalidatePath("/admin/incidents"); revalidatePath("/admin/shifts/day-of"); revalidatePath("/worker"); revalidatePath("/worker/notifications");
+    revalidatePath("/admin/incidents"); revalidatePath("/admin/shifts/day-of"); revalidatePath("/worker"); revalidatePath("/worker/shifts"); revalidatePath("/worker/notifications");
     return{ok:true};
   } catch(error:unknown){console.error(`Failed to ${command} operational incident`,error);return{ok:false,...adminIncidentError(undefined)};}
 }
@@ -64,6 +64,7 @@ export async function createOperationalIncident(input: CreateOperationalIncident
     const result = response.data as RpcResult;
     if (!result.ok) return { ok: false, ...workerIncidentError(result.code, "create") };
     revalidatePath("/worker");
+    revalidatePath("/worker/shifts");
     revalidatePath(`/worker/assignments/${parsed.data.assignmentId}`);
     return { ok: true };
   } catch (error: unknown) {
@@ -87,6 +88,7 @@ export async function retractOperationalIncident(input: RetractOperationalIncide
     const result = response.data as RpcResult;
     if (!result.ok) return { ok: false, ...workerIncidentError(result.code, "retract") };
     revalidatePath("/worker");
+    revalidatePath("/worker/shifts");
     revalidatePath(`/worker/assignments/${parsed.data.assignmentId}`);
     return { ok: true };
   } catch (error: unknown) {

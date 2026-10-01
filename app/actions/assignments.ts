@@ -136,6 +136,7 @@ async function markAssignmentAbsence(
     revalidatePath(`/admin/shifts/${shiftId}`);
     revalidatePath(`/admin/projects/${job.project_id}`);
     revalidatePath("/worker");
+    revalidatePath("/worker/shifts");
     revalidatePath(`/worker/assignments/${assignmentId}`);
     return { ok: true };
   } catch (error: unknown) {

@@ -2,7 +2,7 @@
 
 ## Sources
 - Figma `523:2`（一覧）/ `525:2`（Drawer）を参照。
-- `Dispatch OS UI/UX v1`、UI Pattern、現行Assignment / Shift / Pre-shift domainを正本とした。
+- `OpsCue UI/UX v1`、UI Pattern、現行Assignment / Shift / Pre-shift domainを正本とした。
 - Figma中の未実装ドメイン（連絡、再送、管理者確認、欠員対応）は採用していない。
 
 ## Git State

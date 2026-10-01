@@ -1,8 +1,8 @@
-# Dispatch OS UI Pattern Library v1.0
+# OpsCue UI Pattern Library v1.0
 
 ## 1. Purpose
 
-本ドキュメントは、Dispatch OSで使用するUI Patternと、その選択・実装ルールを定義する。
+本ドキュメントは、OpsCueで使用するUI Patternと、その選択・実装ルールを定義する。
 
 目的はPatternの種類を増やすことではない。同じ仕事に同じInteractionを提供し、画面ごとに異なる操作方法が生まれることを防ぐことである。
 
@@ -15,7 +15,7 @@ Pattern選択では、次を優先する。
 - Accessibility
 - Responsive Behavior
 
-本書はUI Design Dictionaryを参考にしているが、Dispatch OSの業務フロー、情報設計、Admin / Workerの利用状況、Accessibilityを優先する。
+本書はUI Design Dictionaryを参考にしているが、OpsCueの業務フロー、情報設計、Admin / Workerの利用状況、Accessibilityを優先する。
 
 ## 2. Relationship to UI/UX Guidelines
 
@@ -38,7 +38,7 @@ Components / Screens
 
 | Status | 意味 |
 | --- | --- |
-| STANDARD | Dispatch OSの標準。新規実装では原則として使用する |
+| STANDARD | OpsCueの標準。新規実装では原則として使用する |
 | CONDITIONAL | 明記した条件を満たす場合だけ使用する |
 | AVOID | 原則使用しない。採用には明確な理由とReviewが必要 |
 
@@ -63,7 +63,7 @@ Dashboard、案件、シフト、スタッフ、取引先・勤務先、勤怠�
 
 Workerの主要Navigationや、Detail内の関連データ移動には使用しない。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 `/admin`配下のAdmin Shell。ExpandedはIcon + Label、CollapsedはIconとTooltipを表示する。
 
@@ -100,7 +100,7 @@ Project、Shift、AttendanceのDetailや、階層内の作成画面で使用す�
 
 Dashboardや1階層の一覧、Workerの短いMobile flowでは使用しない。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 `案件管理 > Project`、`シフト管理 > Shift`、`勤怠管理 > Worker / Attendance`。
 
@@ -127,7 +127,7 @@ Scope: Both
 
 #### Purpose
 
-一覧の主対象名をDetailへの一貫した主要導線にするDispatch OS独自Pattern。
+一覧の主対象名をDetailへの一貫した主要導線にするOpsCue独自Pattern。
 
 #### Use When
 
@@ -137,7 +137,7 @@ Project名、Shift日時・主タイトル、Attendance ListのWorker名など�
 
 対象にDetailがない場合や、Action実行を目的とする要素には使用しない。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Project Name → Project Detail、Worker Name → Attendance Detail、Shift日時 → Shift Detail。
 
@@ -174,7 +174,7 @@ Projects、Shifts、Attendance、Workers、Clientsが1画面の適正件数を�
 
 件数が少ない場合や、ページ分割で比較作業が悪化する場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 将来の全件Shift一覧、長期間のAttendance一覧。
 
@@ -211,7 +211,7 @@ Scope: Both
 
 短い画面、Viewportを過度に圧迫する場合、複数Sticky領域が競合する場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Admin DetailのAction header、Worker Assignment Detailの勤務開始・終了Action。
 
@@ -248,7 +248,7 @@ Scope: Admin
 
 Desktopで主要Navigationを隠す用途には使用しない。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Admin HeaderからSidebar内容をDrawerとして開く。
 
@@ -287,7 +287,7 @@ Job Create / Edit、Shift Create / Edit、Advanced Filterに使用する。
 
 入力が非常に長い、複数Step、比較対象を常時参照できない、または別Drawer上から開く場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Project DetailからJob追加、Job配下のShift追加、Shift Listの詳細条件。
 
@@ -324,7 +324,7 @@ Scope: Both
 
 長いForm、閲覧だけの情報、頻繁な軽微操作には使用しない。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Assignment配置解除、Attendanceの欠勤・無断欠勤確認。
 
@@ -361,7 +361,7 @@ Project Create、Bulk Shift Create、複数Section・複数日・確認工程を
 
 親Detail内で短時間に完了する単純な追加・編集。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 `/admin/projects/new`、複数日一括Shift作成。
 
@@ -398,7 +398,7 @@ Project基本情報など、少数Fieldを独立して安全に更新できる�
 
 複数Entityを更新する、重大な状態遷移、複雑なValidation、一覧の多数Cellを同時編集する場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 将来のProject説明・補足情報の編集候補。
 
@@ -435,7 +435,7 @@ Scope: Both
 
 DrawerまたはDialogが既に開いているすべての通常ケース。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Job Drawer内からShift Dialogを開く構造は禁止する。
 
@@ -474,7 +474,7 @@ Scope: Both
 
 背景やShellまで不必要に狭める用途には使用しない。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Admin Listは広め、Detailは中程度、FormとWorker画面は狭めにする。
 
@@ -511,7 +511,7 @@ Detail、Form、Dashboardの情報群に使用する。
 
 単なる余白やBorderを追加するためだけに使用しない。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Project基本情報、配置サマリー、Worker打刻、確定勤務実績、訂正履歴。
 
@@ -548,7 +548,7 @@ Dashboard Summary、Workerの次の勤務、Mobile card listなど独立性が�
 
 余白目的、Sectionの多重囲い、Tableの各Cellには使用しない。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 本日の稼働KPI、Worker HomeのAssignment、Project staffing summary。
 
@@ -585,7 +585,7 @@ Scope: Admin
 
 URL共有、Mobile操作、Detailの情報量が多い場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 将来のAttendance triage候補。v1の標準Route構造には直ちに導入しない。
 
@@ -622,7 +622,7 @@ Tabsは同格の2〜5領域、Accordionは長いFormや補足情報に使用す�
 
 重要情報やCritical Actionを隠す、Sectionが少ない、深いNested構造になる場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 将来のProject Detailで基本情報 / Staffing / Historyが十分大きい場合。Workerの今やるActionには使用しない。
 
@@ -659,7 +659,7 @@ Summary、Form field group、Action group、List itemで使用する。
 
 順序変更により意味やKeyboard順序が破綻する場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Project list item、Shift summary、Worker Assignment detail。
 
@@ -698,7 +698,7 @@ Scope: Both
 
 列同士の厳密比較が主目的ならTableを使用する。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Project List、Shift List、Worker Homeの次の勤務。
 
@@ -735,7 +735,7 @@ Attendance、Workers、Clientsなど列比較と走査が主目的の場合。
 
 各Recordの情報構造が異なる、Mobileが主利用、列が過剰な場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Attendance ListのWorker、勤務日時、状態、要確認、確定状況。
 
@@ -772,7 +772,7 @@ Dashboard、Project staffing、Attendance summaryに使用する。
 
 単なる件数を装飾するだけ、指標の定義が不明、Actionへ誤認される場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 本日の稼働、正常、要確認、必要人数、配置人数、不足人数。
 
@@ -809,7 +809,7 @@ Project、Shift、Application、Assignment、Pre-shift、Attendance状態に使�
 
 Navigation、長文説明、単独でActionを実行する要素には使用しない。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 募集中、配置済み、未確認、確認済み、勤務中、欠勤、確定済み。
 
@@ -846,7 +846,7 @@ Project / Shift staffingに明確な分母と分子がある場合。
 
 進捗の意味が曖昧、分母が0、正確な数値表示がない場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 配置人数 / 必要人数、不足人数、配置率。
 
@@ -883,7 +883,7 @@ Project、Shift、Attendance、Assignmentの基本情報に使用する。
 
 複数Recordの比較や編集Formには使用しない。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 勤務日、時間、休憩、勤務先、住所、募集人数、確定時刻。
 
@@ -920,7 +920,7 @@ Attendance revision history、操作履歴など監査性が必要な場合。
 
 順序が重要でない単純な関連一覧。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Attendance Detailの訂正前後、理由、変更者、変更日時。
 
@@ -957,7 +957,7 @@ Scope: Both
 
 Query errorやLoadingを0件として扱う場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Project未登録、Shift未登録、該当Attendanceなし、次の勤務なし。
 
@@ -996,7 +996,7 @@ Project、Job、Shift、Attendance correctionなど複数情報群を持つForm�
 
 Fieldが1〜3個の短い確認Form。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 基本情報、募集情報、勤務条件、補足情報。
 
@@ -1033,7 +1033,7 @@ Text Inputは短文、Textareaは説明、Radioは少数の排他選択、Checkb
 
 PlaceholderをLabel代わりにする、Selectを多数候補の検索に使う、Toggleを保存Buttonが必要な設定に使う場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Project名、説明、can_work、health_status、勤務日、開始・終了時刻。
 
@@ -1070,7 +1070,7 @@ Selectは少数で安定した候補、ComboboxはClient、Workplace、Workerな
 
 自由入力を許す値、選択肢が2〜4個で比較が重要な場合はRadio等を検討する。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Project statusはSelect、Client / Workplace / Worker selectionは件数増加時にCombobox。
 
@@ -1107,7 +1107,7 @@ Scope: Both
 
 DB Error、SQL state code、Table名、Policy名、Stack traceを表示する場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Shift時刻関係、募集人数、Attendance訂正理由、前日確認受付状態。
 
@@ -1144,7 +1144,7 @@ Project Create、Bulk Shift Createなど画面外にもErrorが存在し得る�
 
 短いFormでField Errorだけで全体を把握できる場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 複数日Shift作成の無効日・時刻・人数Error。
 
@@ -1183,7 +1183,7 @@ Scope: Both
 
 重大Error、再操作が必要、内容を後から確認する必要がある場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Project基本情報更新、Shift追加後の成功通知。
 
@@ -1220,7 +1220,7 @@ Create / Update / Confirm結果、Data API error、業務上の注意に使用�
 
 装飾Notification、Errorを未登録状態に変換する場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 「勤怠を確定しました」「前日確認を送信できませんでした」「入力項目を取得できませんでした」。
 
@@ -1257,7 +1257,7 @@ Server Action、Route transition、データ再取得中に使用する。
 
 全画面を無期限にblockする、Button labelが消える、LoadingをEmpty Stateとして表示する場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 「案件を作成中...」「前日確認を送信中...」「勤怠を確定中...」。
 
@@ -1294,7 +1294,7 @@ Scope: Both
 
 Server-rendered Pageが速い、構造が複雑、Spinnerより理解しにくい場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 将来のFilter結果更新やMaster Detail候補。
 
@@ -1333,7 +1333,7 @@ Primaryは画面の主要Action、Secondaryは補助Action、Ghostは低優先�
 
 同一領域に複数Primaryを置く、NavigationへButtonを乱用する場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 保存 / 作成 / 確定はPrimary、編集 / 追加はSecondary、Cancel / 戻るはGhostまたはLink。
 
@@ -1370,7 +1370,7 @@ Scope: Both
 
 単なるCancel、Navigation、通常保存。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 配置解除、欠勤、無断欠勤、将来の削除。
 
@@ -1407,7 +1407,7 @@ Scope: Admin
 
 Primary Action、Critical Action、唯一の重要導線を隠す場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 一覧行の将来的な追加操作、Audit export等。編集など高頻度Actionは状況に応じて外に出す。
 
@@ -1446,7 +1446,7 @@ Projects、Shifts、Attendance、Workers、Clientsに使用する。
 
 対象が少なく絞込が不要、またはFilter結果が現在条件を表示しない場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Project名検索、今日 / 明日 / 今週、状態、要確認。
 
@@ -1483,7 +1483,7 @@ Scope: Both
 
 候補が多い、Labelが長い、複数選択の意味が曖昧な場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 Shift Listの日付軸、Attendanceの要確認切替。
 
@@ -1520,7 +1520,7 @@ Shifts、Attendance、Workers、ClientsでFilter数が多くなる場合。
 
 頻出条件を隠す、条件の適用状況が分からなくなる場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 支店、Client、Workplace、期間、複数状態をDrawer内で設定する。
 
@@ -1557,7 +1557,7 @@ Scope: Admin
 
 要件、保存先、共有範囲が未確定の現在。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 将来の「本日・要確認・名古屋支店」Attendance view。
 
@@ -1586,7 +1586,7 @@ Scope: Worker
 
 #### Purpose
 
-Workerが現在実行すべき前日確認、勤務開始、勤務終了を最優先で見つけられるようにするDispatch OS独自Pattern。
+Workerが現在実行すべき前日確認、勤務開始、勤務終了を最優先で見つけられるようにするOpsCue独自Pattern。
 
 #### Use When
 
@@ -1596,7 +1596,7 @@ Worker HomeとAssignment Detailで、状態により実行可能なActionが1つ
 
 実行不可条件をClientだけで判定する、複数のPrimary Actionを同時表示する場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 pending時の前日確認、開始可能時の勤務開始、勤務中の勤務終了。
 
@@ -1633,7 +1633,7 @@ Worker Homeの複数Assignment、Assignment Detailの補足情報。
 
 Critical Actionや受付条件をAccordion等へ隠す場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 次の勤務Cardに日時、勤務先、状態、Detail Linkを表示する。
 
@@ -1670,7 +1670,7 @@ Advanced Filter、検索可能なEntity selectionなど通常Drawerでは狭い�
 
 短いConfirmationや通常Navigationで十分な場合。
 
-#### Dispatch OS Examples
+#### OpsCue Examples
 
 将来のWorker / Workplace Combobox候補、Admin Advanced Filter。
 
@@ -1692,7 +1692,7 @@ DesktopのDialogを機械的に全画面化せず、Mobile taskの長さで判�
 
 ## 13. Patterns to Avoid
 
-| Pattern | Status | Dispatch OSで避ける理由 | 代替 |
+| Pattern | Status | OpsCueで避ける理由 | 代替 |
 | --- | --- | --- | --- |
 | Full Row Click | AVOID | 行内Link、Button、Checkboxと競合し、遷移範囲が不明確 | Primary Object Link |
 | Excessive Cards | AVOID | 情報密度が下がり、Section hierarchyが曖昧 | Section、Structured List |
@@ -1710,7 +1710,7 @@ DesktopのDialogを機械的に全画面化せず、Mobile taskの長さで判�
 | Masonry / Tile Grid | AVOID | 業務データ比較を妨げる | Grid、List、Table |
 | Carousel / Stories | AVOID | 重要情報が隠れ、順次確認に不向き | Structured List |
 
-## 14. Dispatch OS Specific Patterns
+## 14. OpsCue Specific Patterns
 
 ### 14.1 Management Hub
 
@@ -2059,7 +2059,7 @@ Target:
 
 - [UI Design Dictionary](https://ui-design-dictionary.pages.dev/)
   - 2026-08-23にNavigation、Layout、Forms & Input、Data Display、Feedback、Content、Actions、Mobile、Social & Communication、Onboarding & Guidance、Media、Commerce、Advanced Patterns、Authentication、Error & Systemを確認した。
-  - Pattern名・概念・用途のみを参考にし、本文はDispatch OS向けに再構成した。
+  - Pattern名・概念・用途のみを参考にし、本文はOpsCue向けに再構成した。
 
 ### Internal
 
@@ -2073,6 +2073,6 @@ Target:
 
 ## 22. Final Principle
 
-UI Design DictionaryにPatternが存在することは、Dispatch OSで採用する理由にならない。
+UI Design DictionaryにPatternが存在することは、OpsCueで採用する理由にならない。
 
 同じ目的には同じInteractionを提供し、利用者が画面ごとの操作方法を学び直さなくてよい状態を作る。Pattern追加より、既存Patternの一貫した適用を優先する。

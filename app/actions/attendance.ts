@@ -31,6 +31,7 @@ async function recordAttendance(input: WorkerAttendanceInput, kind: "start" | "e
     const result = await supabase.rpc(functionName, { p_assignment_id: parsed.data.assignmentId });
     if (result.error) return { ok: false, message: safeMessage(result.error.message, kind) };
     revalidatePath("/worker");
+    revalidatePath("/worker/shifts");
     revalidatePath(`/worker/assignments/${parsed.data.assignmentId}`);
     revalidatePath("/admin");
     revalidatePath("/admin/shifts");
@@ -69,7 +70,7 @@ export async function confirmAttendanceRecord(input: AttendanceConfirmationInput
     if (result.error?.message.includes("attendance_adjustment_reason_required")) return { ok: false, message: "打刻または予定休憩から補正する場合は、修正理由を入力してください。" };
     if (result.error) throw result.error;
     const shift = assignment.data.shift_slots as unknown as { jobs: { project_id: string } };
-    revalidatePath("/admin"); revalidatePath("/admin/attendance"); revalidatePath(`/admin/attendance/${parsed.data.assignmentId}`); revalidatePath("/admin/shifts"); revalidatePath(`/admin/shifts/${assignment.data.shift_slot_id}`); revalidatePath(`/admin/projects/${shift.jobs.project_id}`); revalidatePath("/worker"); revalidatePath(`/worker/assignments/${parsed.data.assignmentId}`);
+    revalidatePath("/admin"); revalidatePath("/admin/attendance"); revalidatePath(`/admin/attendance/${parsed.data.assignmentId}`); revalidatePath("/admin/shifts"); revalidatePath(`/admin/shifts/${assignment.data.shift_slot_id}`); revalidatePath(`/admin/projects/${shift.jobs.project_id}`); revalidatePath("/worker"); revalidatePath("/worker/shifts"); revalidatePath(`/worker/assignments/${parsed.data.assignmentId}`);
     return { ok: true };
   } catch (error: unknown) { console.error("Failed to confirm attendance record", error); return { ok: false, message: confirmationGeneralMessage }; }
 }
