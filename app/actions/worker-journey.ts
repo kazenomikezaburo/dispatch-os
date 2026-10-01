@@ -62,6 +62,7 @@ export async function recordOwnAssignmentJourneyEvent(input: unknown): Promise<W
     const ok = code === "RECORDED" || code === "ALREADY_RECORDED";
     if (ok) {
       revalidatePath("/worker");
+      revalidatePath("/worker/shifts");
       revalidatePath(`/worker/assignments/${parsed.data.assignmentId}`);
     }
     return response(code, ok);

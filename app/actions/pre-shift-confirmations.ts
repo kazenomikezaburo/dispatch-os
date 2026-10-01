@@ -30,6 +30,7 @@ export async function submitPreShiftConfirmation(input: PreShiftConfirmationInpu
       return { ok: false, message: generalMessage };
     }
     revalidatePath("/worker");
+    revalidatePath("/worker/shifts");
     revalidatePath(`/worker/assignments/${parsed.data.assignmentId}`);
     revalidatePath("/admin");
     return { ok: true };

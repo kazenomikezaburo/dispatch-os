@@ -13,8 +13,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
       <section className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-        <h1 className="text-2xl font-semibold text-slate-900">派遣業務OS</h1>
-        <p className="mt-2 text-sm text-slate-600">アカウント情報を入力してログインしてください</p>
+        <h1 className="text-2xl font-semibold text-slate-900">OpsCue</h1>
+        <p className="mt-2 text-sm font-medium text-slate-700">募集から、現場が無事に終わるまで。</p>
+        <p className="mt-1 text-sm text-slate-600">アカウント情報を入力してログインしてください</p>
         {params.error === "invalid_credentials" && <p className="mt-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">メールアドレスまたはパスワードが正しくありません。</p>}
         {params.reason === "session_expired" && <p className="mt-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">セッションの有効期限が切れました。もう一度ログインしてください。</p>}
         {params.reason === "line_session_required" && <p className="mt-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800">LINE連携中にログイン状態を確認できませんでした。ログイン後、LINE連携を最初からやり直してください。</p>}

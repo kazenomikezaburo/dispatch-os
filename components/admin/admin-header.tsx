@@ -31,7 +31,7 @@ export function AdminHeader({ userMenu }: { userMenu: ReactNode }) {
             <span className="h-0.5 w-4 bg-current" />
           </button>
           <p className="truncate text-sm font-semibold text-foreground lg:text-base">
-            Dispatch OS
+            OpsCue
           </p>
         </div>
         {userMenu}

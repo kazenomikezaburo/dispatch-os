@@ -62,7 +62,7 @@ Figmaにattachment/image galleryは見当たらない。senderは表示される
 
 ## Ownership and Organization Boundary
 
-- Canonical ownerは現在のDispatch OS deploymentに対応するorganization。author個人所有ではない。
+- Canonical ownerは現在のOpsCue deploymentに対応するorganization。author個人所有ではない。
 - 現schemaにorganization tableはないため、rootへ架空の`organization_id`は追加しない。DB-2.9Bでは現在のsingle-organization invariantを明記する。
 - `scope_type=organization`はdeployment全体、`scope_type=branch`は一つの`branches.id`をoperational authorization boundaryとして持つ。
 - `created_by`等はactor audit FKでありownership判定に使用しない。actor profile削除時は`SET NULL`でもAnnouncementは残る。

@@ -122,7 +122,7 @@ export function AdminMobileSidebar({
             id="admin-mobile-navigation-title"
             className="truncate font-semibold text-foreground"
           >
-            Dispatch OS
+            OpsCue
           </h2>
           <p className="truncate text-xs text-foreground-muted">Dispatch Manager</p>
         </div>

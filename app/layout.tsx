@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "派遣業務OS",
-  description: "派遣会社向けの業務管理OS",
+  title: "OpsCue",
+  description: "募集から、現場が無事に終わるまで。",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

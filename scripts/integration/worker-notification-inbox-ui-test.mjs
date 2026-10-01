@@ -8,7 +8,8 @@ function test(name, fn) { fn(); passed += 1; console.log(`PASS ${name}`); }
 const readModel = await readFile(new URL("../../lib/worker/notifications/get-worker-notifications.ts", import.meta.url), "utf8");
 const action = await readFile(new URL("../../app/actions/worker-notifications.ts", import.meta.url), "utf8");
 const inbox = await readFile(new URL("../../components/worker/notifications/worker-notification-inbox.tsx", import.meta.url), "utf8");
-const layout = await readFile(new URL("../../app/worker/layout.tsx", import.meta.url), "utf8");
+const shell = await readFile(new URL("../../components/worker/worker-shell.tsx", import.meta.url), "utf8");
+const support = await readFile(new URL("../../app/worker/support/page.tsx", import.meta.url), "utf8");
 const page = await readFile(new URL("../../app/worker/notifications/page.tsx", import.meta.url), "utf8");
 
 test("unread count keeps zero display value", () => assert.equal(formatWorkerUnreadCount(0), "0"));
@@ -32,8 +33,8 @@ test("safe unavailable message hides internal reason", () => { assert.match(inbo
 test("Announcement notification has a type label and canonical CTA", () => { assert.match(inbox, /announcement_published: "お知らせ"/); assert.match(inbox, /`\/worker\/announcements\/\$\{sourceId\}`/); });
 test("Reminder notification has a type label and canonical Assignment CTA", () => { assert.match(inbox, /pre_confirmation_reminder: "勤務前確認"/); assert.match(inbox, /`\/worker\/assignments\/\$\{sourceId\}`/); });
 test("Journey reminders have bounded Worker labels", () => { assert.match(inbox, /wake_reminder: "起床確認"/); assert.match(inbox, /departure_reminder: "出発確認"/); assert.match(inbox, /arrival_reminder: "到着確認"/); });
-test("shell entry has an accessible unread badge label", () => { assert.match(layout, /href="\/worker\/notifications"/); assert.match(layout, /通知、未読\$\{unreadCount\}件/); assert.match(layout, /href="\/worker\/announcements" aria-label="お知らせ"/); });
-test("zero unread hides the visual badge", () => assert.match(layout, /unreadCount > 0 && <span/));
+test("shell entry has an accessible unread badge label", () => { assert.match(shell, /href="\/worker\/notifications"/); assert.match(shell, /通知、未読\$\{unreadCount\}件/); assert.match(support, /href: "\/worker\/announcements"/); });
+test("zero unread hides the visual badge", () => assert.match(shell, /unreadCount > 0 && <span/));
 test("route remains server guarded", () => assert.match(page, /await requireWorker\(\)/));
 test("empty state is present", () => assert.match(inbox, /新しい通知はありません/));
 

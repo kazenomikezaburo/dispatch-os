@@ -1,8 +1,8 @@
-# Dispatch OS UI/UX改善方針 v1.0
+# OpsCue UI/UX改善方針 v1.0
 
 ## 1. 目的
 
-本ドキュメントは、Dispatch OSにおけるAdmin / Worker UIの設計・改修基準を定義する。
+本ドキュメントは、OpsCueにおけるAdmin / Worker UIの設計・改修基準を定義する。
 
 今後のUI/UX実装では、画面単位で局所的にデザインを変更するのではなく、本基準に沿って以下を統一する。
 
@@ -26,7 +26,7 @@
 
 # 2. 基本原則
 
-Dispatch OSは業務管理システムである。
+OpsCueは業務管理システムである。
 
 Admin UIでは装飾性より、
 
@@ -874,7 +874,7 @@ Clientへ不要な権限情報やDB内部情報を露出しない。
 
 # 30. Final Principle
 
-Dispatch OSのUIは、
+OpsCueのUIは、
 
 「画面を増やす」
 
@@ -901,7 +901,7 @@ UI ComponentやInteraction Patternを新規設計する場合、
 - UI Design Dictionary
 
 ただし、掲載パターンをそのまま採用するのではなく、
-Dispatch OSの業務フロー、情報密度、Accessibility、
+OpsCueの業務フロー、情報密度、Accessibility、
 Desktop / Mobile方針に適合する場合のみ採用する。
 
 特に以下を標準候補とする。
